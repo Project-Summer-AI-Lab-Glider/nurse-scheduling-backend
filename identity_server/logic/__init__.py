@@ -1,4 +1,3 @@
 from identity_server.logic.session_manager import SessionManager
-from identity_server.logic.login_logic.login_handler import LoginHandler
 from identity_server.logic.token_logic.token_logic import TokenLogic
 from identity_server.logic.user_logic.user_logic import UserLogic
