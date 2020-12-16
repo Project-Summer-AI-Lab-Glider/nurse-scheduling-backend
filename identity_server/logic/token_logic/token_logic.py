@@ -8,12 +8,13 @@ class TokenLogic:
         self._token_builder = TokenBuilder()
 
     def create_token(self, code):
-        # Placeholder
-        token = {}
-        return self._token_encoder.encode(token)
+        user_id = "ADMIN"           # TODO request to DB
+        permissions = "777"         # TODO request to DB
+        self._token_builder.init(user_id, permissions)
+        return self._token_builder.generate_token()
 
     def refresh_token(self):
-        return ''
+        return self._token_builder.generate_token()
 
     def revoke_token(self):
         return True, ''
