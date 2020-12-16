@@ -1,2 +1,0 @@
-class LoginHandler:
-    pass
