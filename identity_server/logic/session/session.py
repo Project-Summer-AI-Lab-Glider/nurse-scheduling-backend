@@ -41,7 +41,7 @@ class SessionState(ABC):
         if param_container == ParamsContainer.QueryString:
             actual_params = request.GET
         else:
-            actual_params = request.body
+            actual_params = request.POST
         for required_field, required_type in required_params:
             if required_field not in actual_params:
                 request_erros += f'Missing value for field {required_field}'

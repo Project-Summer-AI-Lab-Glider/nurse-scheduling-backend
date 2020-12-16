@@ -40,7 +40,7 @@ class InitialLoginState(SessionState):
         assert isinstance(self.session_context, LoginSessionContext)
         scope = request.GET['scope']
         self.session_context.assign(
-            {'scope': scope, 'callback_url': request.body.callback_url})
+            {'scope': scope, 'callback_url': request.POST.callback_url})
         self.set_session_state(WaitingForPermissions)
         return self.render_html(request, 'identity_server/login_page.htlm', context={'scope': scope})
 
