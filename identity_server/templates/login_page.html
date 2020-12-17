@@ -1,1 +1,76 @@
-<h1>Hi!</h1>
+<head>
+    <title>Login</title>
+</head>
+<style>
+    .container {
+        display: flex;
+        align-items: center;
+    }
+    #permissions {
+        display: none;
+    }
+    input{
+        display: block;
+        margin: 10px;
+    }
+    #buttons-container {
+        display: flex;
+    }
+    button {
+        border-radius: 5px;
+        margin: 5px
+    }
+</style>
+
+<div container="content">
+
+<h1>Application {{ app }} asks you for permissions</h1>
+
+<form id="info" onsubmit="event.preventDefault()">
+    {% csrf_token %}
+    <div>
+        <input name="name" placeholder="Name" autocomplete="off"/>
+        <input name="password" type="password" placeholder="Password"/>
+    </div>
+    
+    <button onclick="onUserData(event)">Next</button>
+    <div id="permissions">
+        <ul>
+            {% for permission in scope %}
+            <li>{{ permission }}</li>
+            {% endfor %}        
+        </ul>
+        <div id="buttons-container">
+            <button onclick="onFormSubmit(event, true)">Accept</button>
+            <button onclick="onFormSubmit(event, false)">Deny</button>
+        </div>
+    </div>
+    
+</form>
+
+</div>
+
+</body>
+<script>    
+    function sendData(data) {
+        const XHR = new XMLHttpRequest();
+        XHR.open( "POST", "login" );
+        XHR.setRequestHeader("enctype","application/x-www-form-urlencoded")
+        XHR.send(JSON.stringify(data));
+    }       
+    
+    function onUserData(e) {
+        e.preventDefault();
+        var permissions_block = document.getElementById("permissions");
+        permissions.style.display = "block"
+    }
+
+    function onFormSubmit(e, isAccepted) {
+        e.preventDefault();
+        const userInfo = document.getElementById( "info" );     
+        const data = Object.fromEntries(new FormData(userInfo).entries());        
+        data.is_accepted = isAccepted;
+        data.client_id = "{{clientId}}"
+        sendData(data);
+    }
+</script>

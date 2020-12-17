@@ -8,7 +8,7 @@ from identity_server.logic.user_logic.user_logic import UserLogic
 from django.http import HttpResponseForbidden, HttpResponse
 
 
-@endpoint(HttpMethod.GET)
+@endpoint(HttpMethod.GET, HttpMethod.POST)
 def login(request: HttpRequest):
     return SessionManager().handle(request, LoginSession)
 
@@ -35,8 +35,8 @@ def refresh_token(request):
 
 @endpoint(HttpMethod.POST, HttpMethod.DELETE)
 def revoke_token(request):
-    is_success, token = TokenLogic().revoke_token()
-    if is_success:
+    is_accepted, token = TokenLogic().revoke_token()
+    if is_accepted:
         return HttpResponse(token)
     else:
         return HttpResponseForbidden()
