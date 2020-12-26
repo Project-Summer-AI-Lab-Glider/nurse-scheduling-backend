@@ -17,21 +17,25 @@ class SessionManager(metaclass=Singleton):
     _sessions = {}
 
     def handle(self, request: HttpRequest, session_type: type):
-        if not self._is_valid(request):
-            return InvalidSession().handle(request)
-        session_id = request.COOKIES['session_id']
+        if not 'session' in request.COOKIES:
+            session_id = self._create_session_id()
+        else:
+            session_id = request.COOKIES['session']
         session = self._get_session(session_id, session_type)
         result = session.handle(request)
         if session.is_finished:
             self._end_session(session_id)
         return result
 
+    def _create_session_id(self):
+        return '1111'
+
     def _is_valid(self, request: HttpRequest):
         # TODO add more sophisticated logic (e.g. check if valid)
-        return 'session_id' in request.COOKIES
+        return 'session' in request.COOKIES
 
     def _get_session(self, session_id: HttpRequest, session_type: type) -> Session:
-        if not session_id or session_id in self._sessions:
+        if not session_id or session_id not in self._sessions:
             self._sessions[session_id] = session_type()
         return self._sessions[session_id]
 

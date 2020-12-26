@@ -1,15 +1,11 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Callable, Dict, ItemsView, Type
+from identity_server.logic.endpoint_decorator import HttpMethod
+from typing import Callable, Dict, ItemsView, List, Type
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from dataclasses import dataclass
-
-
-class ParamsContainer(Enum):
-    QueryString = 'query string'
-    RequestBody = 'request body'
 
 
 @dataclass
@@ -20,14 +16,14 @@ class SessionContext:
 
 
 class SessionState(ABC):
-    def __init__(self, set_session_state, get_context, end_session) -> None:
+    def __init__(self, set_session_state, context, end_session) -> None:
         self.end_session = end_session
         self.set_session_state = set_session_state
-        self.session_context = get_context
+        self.session_context = context
 
     @property
-    def required_request_params(self) -> Dict[str, type]:
-        return ParamsContainer.RequestBody, {}
+    def required_request_params(self) -> List[str]:
+        return []
 
     def handle(self, request: HttpRequest) -> HttpResponse:
         request_errors = self._validate_request_body(request)
@@ -37,17 +33,22 @@ class SessionState(ABC):
 
     def _validate_request_body(self, request: HttpRequest):
         request_erros = ''
-        param_container, required_params = self.required_request_params
-        if param_container == ParamsContainer.QueryString:
-            actual_params = request.GET
-        else:
-            actual_params = request.body
-        for required_field, required_type in required_params:
-            if required_field not in actual_params:
-                request_erros += f'Missing value for field {required_field}'
-            if not isinstance(actual_params[required_field], required_type):
-                request_erros += f'Bad type for field {required_field}. Exp {required_type}, act: {type(actual_params[required_field])}'
+        required_params = self.required_request_params
+        actual_params = self._get_request_data(request)
+        for required_field in required_params:
+            if not actual_params or required_field not in actual_params:
+                request_erros += f'Missing value for field {required_field}\n'
+                continue
         return request_erros
+
+    def _get_request_data(self, request):
+        if request.method == HttpMethod.GET.value:
+            data = request.GET
+        elif request.method == HttpMethod.POST.value:
+            data = request.POST
+        else:
+            raise Exception(f"Unsupported request method {request.method}")
+        return data
 
     @abstractmethod
     def process_request(self, request):
@@ -70,14 +71,14 @@ class SessionState(ABC):
 
 
 class Session(ABC):
-    def __init__(self) -> None:
+    def __init__(self, context=SessionContext) -> None:
         super().__init__()
         self.is_finished = False
-        self._context = SessionContext()
+        self._context = context()
         self.enter_state(self.initial_state)
 
     def enter_state(self, state: SessionState, **kwargs):
-        self._current_state = state(set_session_state=self.enter_state, get_context=self.context,
+        self._current_state = state(set_session_state=self.enter_state, context=self._context,
                                     end_session=self._end_session, **kwargs)
 
     def _end_session(self):
