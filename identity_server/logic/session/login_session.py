@@ -1,11 +1,11 @@
-from functools import partial
-from identity_server.logic.endpoint_decorator import endpoint
-from typing import Callable, List
+import json
+from dataclasses import dataclass, field
+from typing import List
+
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
-from identity_server.logic.session.session import Session, SessionContext, SessionState
-from dataclasses import dataclass, field
-import json
+from identity_server.logic.session.session import (Session, SessionContext,
+                                                   SessionState)
 
 
 @dataclass
@@ -51,7 +51,7 @@ class InitialLoginState(SessionState):
 
     def _get_app(self, client_id):
         """
-        Makes request t oa database to get a name of an app
+        Makes request to the database to get actual application name associated with given client id 
         """
         return 'App'
 
@@ -73,13 +73,18 @@ class WaitingForPermissions(SessionState):
         if request.body:
             return json.loads(request.body)
 
+    def unprocessable_entity(self, reason: str):
+        self.set_session_state(InitialLoginState)
+        return super().unprocessable_entity(reason)
+
     def process_request(self, request: HttpRequest) -> HttpResponse:
         assert isinstance(
             self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
         client_id = self._get_request_data(request)['client_id']
         code = self._generate_code()
         self._save_to_database(code, client_id, self.session_context.scope)
-        return self.redirect(self.session_context.callback_url, code=code)
+        self.set_session_state(LoggedIn)
+        return self.ok(json.dumps({'callback_url': f'{self.session_context.callback_url}?code={code}'}))
 
     def _generate_code(self):
         # TODO Add logic
@@ -89,3 +94,9 @@ class WaitingForPermissions(SessionState):
         # TODO Add logic
         print(
             f'Saving {client_id} associated with code: {code} and scope: {scope} to database')
+
+
+class LoggedIn(SessionState):
+    def process_request(self, request):
+        # TODO: connect with database and return user data
+        return self.ok(json.dumps({'is_authenticated': True}))

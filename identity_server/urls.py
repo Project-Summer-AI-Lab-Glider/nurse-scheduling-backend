@@ -2,6 +2,7 @@ from django.urls import path
 import identity_server.views as views
 
 urlpatterns = [
+    path('is_authenticated', views.is_authenticated),
     # GET
     path('login', views.login),
     # POST

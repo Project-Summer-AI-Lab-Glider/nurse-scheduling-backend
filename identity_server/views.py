@@ -1,3 +1,4 @@
+import json
 from identity_server.logic.session.login_session import LoginSession
 from identity_server.logic.session_manager import SessionManager
 from identity_server.logic.endpoint_decorator import HttpMethod, endpoint
@@ -13,11 +14,16 @@ def login(request: HttpRequest):
     return SessionManager().handle(request, LoginSession)
 
 
-@endpoint(HttpMethod.POST)
+@endpoint(HttpMethod.GET)
+def is_authenticated(request: HttpRequest):
+    return SessionManager().handle(request, LoginSession)
+
+
+@endpoint(HttpMethod.GET)
 def create_token(request: HttpRequest):
-    code = request.POST['code']  # code that was previously given to app
+    code = request.GET['code']  # code that was previously given to app
     encoded_token = TokenLogic().create_token(code)
-    return HttpResponse(encoded_token)
+    return HttpResponse(json.dumps({'token': encoded_token}))
 
 
 @endpoint(HttpMethod.GET)
