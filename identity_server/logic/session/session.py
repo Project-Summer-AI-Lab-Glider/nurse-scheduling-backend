@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
-from enum import Enum
 from identity_server.logic.endpoint_decorator import HttpMethod
-from typing import Callable, Dict, ItemsView, List, Type
+from typing import List, Type
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
@@ -63,8 +62,8 @@ class SessionState(ABC):
     def render_html(self, request: HttpRequest, template, context):
         return render(request=request, template_name=template, context=context)
 
-    def redirect(self, to, **params):
-        return redirect(to, **params)
+    def ok(self, content: str) -> HttpResponse:
+        return HttpResponse(content)
 
     def forbidden_action(self, reason=''):
         return HttpResponseForbidden(reason=reason)
