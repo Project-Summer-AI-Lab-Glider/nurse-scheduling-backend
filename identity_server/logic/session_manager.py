@@ -25,13 +25,14 @@ class SessionManager(metaclass=Singleton):
         result = session.handle(request)
         if session.is_finished:
             self._end_session(session_id)
+        # TODO assign cookie with session id to result
         return result
 
     def _create_session_id(self):
+        # TODO add function to generate code. Should be from 4 to 11 symbols
         return '1111'
 
     def _is_valid(self, request: HttpRequest):
-        # TODO add more sophisticated logic (e.g. check if valid)
         return 'session' in request.COOKIES
 
     def _get_session(self, session_id: HttpRequest, session_type: type) -> Session:

@@ -87,16 +87,16 @@ class WaitingForPermissions(SessionState):
         return self.ok(json.dumps({'callback_url': f'{self.session_context.callback_url}?code={code}'}))
 
     def _generate_code(self):
-        # TODO Add logic
+        # TODO DB
         return 'CODE'
 
     def _save_to_database(self, code, client_id, scope):
-        # TODO Add logic
+        # TODO DB
         print(
             f'Saving {client_id} associated with code: {code} and scope: {scope} to database')
 
 
 class LoggedIn(SessionState):
     def process_request(self, request):
-        # TODO: connect with database and return user data
+        # TODO DB
         return self.ok(json.dumps({'is_authenticated': True}))

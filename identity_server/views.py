@@ -51,3 +51,59 @@ def revoke_token(request):
 @endpoint(HttpMethod.GET)
 def introspect_token(request):
     return Http404()
+
+# TODO add validation decorator
+# TODO add endpoints
+# 1. GET contacts
+# Returns
+#  Worker {
+#   workerId: string;
+#   name: string;
+#   phoneNumber: string;
+# }
+# 2. GET users
+# Returns:
+# [Worker {
+#   workerId: string;
+#   name: string;
+#   type: WorkerType;
+#   workNorm: number; // 0 - 1
+#   phoneNumber: string;
+# }]
+# 3. GET users/{id}
+# Returns
+# Worker {
+#   workerId: string;
+#   name: string;
+#   type: WorkerType;
+#   workNorm: number; // 0 - 1
+#   phoneNumber: string;
+# }
+# 4. POST user
+# Accepts:
+# Worker {
+#   workerId: string;
+#   name: string;
+#   type: WorkerType;
+#   workNorm: number; // 0 - 1
+#   phoneNumber: string;
+# }
+# 5. GET shifts/{worker_id}?from=yyyy.mm.dd&to=yyyy.mm.dd
+# Returns:
+# [Shift {
+#   fromHour: number; // 0 - 24
+#   toHour: number;
+#   code: string;
+#   name: string;
+#   isWorking: boolean;
+#   day: number
+# }]
+#  6. POST shifts/{worker_id}
+# [Shift {
+#   fromHour: number; // 0 - 24
+#   toHour: number;
+#   code: string;
+#   name: string;
+#   isWorking: boolean;
+#   day: number
+# }]
