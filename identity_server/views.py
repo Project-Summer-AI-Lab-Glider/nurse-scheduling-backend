@@ -22,6 +22,7 @@ def is_authenticated(request: HttpRequest):
 @endpoint(HttpMethod.GET)
 def create_token(request: HttpRequest):
     code = request.GET['code']  # code that was previously given to app
+    print(f'REQUEST: {request}')
     encoded_token = TokenLogic().create_token(code)
     return HttpResponse(json.dumps({'token': encoded_token}))
 

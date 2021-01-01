@@ -1,0 +1,9 @@
+- model: mongodb.worker
+  pk: 1
+  fields:
+    worker_id: 1 
+    name: Joanna 
+    surname: Kowalska
+    work_type: TYPE
+    work_norm: 1 
+    phone_number: 888-888-888
