@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'identity_server.apps.IdentityServerConfig'
+    'identity_server.apps.IdentityServerConfig',
+    'mongodb'
 ]
 
 MIDDLEWARE = [
@@ -75,7 +76,16 @@ WSGI_APPLICATION = 'nurse_scheduling_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {}
+DATABASES = {
+    'default': {
+          'ENGINE': 'djongo',
+          'NAME': 'application_server',
+      }
+}
+
+FIXTURE_DIRS = (
+   'mongodb/fixtures/',
+)
 
 
 # Password validation

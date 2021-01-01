@@ -2,6 +2,9 @@ import json
 from dataclasses import dataclass, field
 from typing import List
 
+from mongodb.Worker import Worker
+from mongodb.ApplicationAccount import ApplicationAccount
+
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from identity_server.logic.session.session import (Session, SessionContext,
@@ -81,8 +84,12 @@ class WaitingForPermissions(SessionState):
         assert isinstance(
             self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
         client_id = self._get_request_data(request)['client_id']
+        name = self._get_request_data(request)['name']
         code = self._generate_code()
-        self._save_to_database(code, client_id, self.session_context.scope)
+        worker = Worker.objects.filter(name=name)
+        worker_id = worker[0].worker_id
+        
+        self._save_to_database(code, client_id, worker_id, self.session_context.scope)
         self.set_session_state(LoggedIn)
         return self.ok(json.dumps({'callback_url': f'{self.session_context.callback_url}?code={code}'}))
 
@@ -90,13 +97,16 @@ class WaitingForPermissions(SessionState):
         # TODO DB
         return 'CODE'
 
-    def _save_to_database(self, code, client_id, scope):
-        # TODO DB
-        print(
-            f'Saving {client_id} associated with code: {code} and scope: {scope} to database')
+    def _save_to_database(self, code, client_id, worker_id, scope):
+        # TODO DB DONE
+        ApplicationAccount.objects.create(client_id=client_id, worker_id=worker_id,
+        permissions=scope)
+        print(f'Saving {client_id} associated with code: {code} and scope: {scope} to database')
 
 
 class LoggedIn(SessionState):
     def process_request(self, request):
         # TODO DB
+        Worker.objects.create(worker_id="12", name="Jan", surname="Kowalski", \
+            work_type="TYPE", work_norm="1", phone_number="888-888-888") 
         return self.ok(json.dumps({'is_authenticated': True}))
