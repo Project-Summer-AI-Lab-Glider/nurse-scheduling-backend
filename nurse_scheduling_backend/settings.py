@@ -78,8 +78,14 @@ WSGI_APPLICATION = 'nurse_scheduling_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-          'ENGINE': 'djongo',
-          'NAME': 'application_server',
+        'ENGINE': 'djongo',
+        "CLIENT": {
+           "name": 'application_db',
+           "host": 'mongodb+srv://admin:admin@cluster0.ygawx.mongodb.net/application_db?retryWrites=true&w=majority',
+           "username": 'admin',
+           "password": 'admin',
+           "authMechanism": "SCRAM-SHA-1",
+        }, 
       }
 }
 

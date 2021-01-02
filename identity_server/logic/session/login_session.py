@@ -86,8 +86,8 @@ class WaitingForPermissions(SessionState):
         client_id = self._get_request_data(request)['client_id']
         name = self._get_request_data(request)['name']
         code = self._generate_code()
-        worker = Worker.objects.filter(name=name)
-        worker_id = worker[0].worker_id
+        worker = Worker.objects.filter(name=name).last()
+        worker_id = worker.worker_id
         
         self._save_to_database(code, client_id, worker_id, self.session_context.scope)
         self.set_session_state(LoggedIn)
@@ -107,6 +107,4 @@ class WaitingForPermissions(SessionState):
 class LoggedIn(SessionState):
     def process_request(self, request):
         # TODO DB
-        Worker.objects.create(worker_id="12", name="Jan", surname="Kowalski", \
-            work_type="TYPE", work_norm="1", phone_number="888-888-888") 
         return self.ok(json.dumps({'is_authenticated': True}))
