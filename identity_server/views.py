@@ -1,3 +1,5 @@
+from identity_server.logic.session.registration_session.registration_session import RegistrationSession
+from identity_server.logic.session.session import Session
 import json
 from identity_server.logic.session.login_session import LoginSession
 from identity_server.logic.session_manager import SessionManager
@@ -13,7 +15,16 @@ from mongodb.WorkerShift import WorkerShift
 
 @endpoint(HttpMethod.GET, HttpMethod.POST)
 def login(request: HttpRequest):
+    print(request.POST)
+    print(request.GET)
     return SessionManager().handle(request, LoginSession)
+
+
+@endpoint(HttpMethod.GET, HttpMethod.POST)
+def register(request: HttpRequest):
+    print(request.POST)
+    print(request.GET)
+    return SessionManager().handle(request, RegistrationSession)
 
 
 @endpoint(HttpMethod.GET)
@@ -68,20 +79,22 @@ def get_user(request: HttpRequest, user_id):
 
 @endpoint(HttpMethod.POST)
 def create_user(request: HttpRequest):
-    worker = Worker(worker_id='3', 
-                name='Anna',  
-                surname='Kowalskowa', 
-                work_type='0', 
-                work_norm='0',
-                phone_number='999-999-999')
+    worker = Worker(worker_id='3',
+                    name='Anna',
+                    surname='Kowalskowa',
+                    work_type='0',
+                    work_norm='0',
+                    phone_number='999-999-999')
     UserLogic().create_user(worker)
     return HttpResponse('success')
 
-#worker_shifts/1?from=2021-01-01&to=2021-01-05
+# worker_shifts/1?from=2021-01-01&to=2021-01-05
+
+
 @endpoint(HttpMethod.GET)
 def get_workers_shift(request: HttpRequest, user_id):
-    fromDate = request.GET.get('from','')
-    toDate = request.GET.get('to','')
+    fromDate = request.GET.get('from', '')
+    toDate = request.GET.get('to', '')
     worker_shifts = UserLogic().get_worker_shift(user_id, fromDate, toDate)
     return HttpResponse(worker_shifts)
 
@@ -89,15 +102,15 @@ def get_workers_shift(request: HttpRequest, user_id):
 @endpoint(HttpMethod.POST)
 def create_shift(request: HttpRequest, user_id):
     worker_shift = WorkerShift(worker_id=user_id,
-                                fromHour=0,
-                                toHour=12,
-                                code='CODE',
-                                name='NAME',
-                                isWorking=False,
-                                day='2021-01-01')
+                               fromHour=0,
+                               toHour=12,
+                               code='CODE',
+                               name='NAME',
+                               isWorking=False,
+                               day='2021-01-01')
     UserLogic().create_worke_shift(worker_shift)
     return HttpResponse('success')
-    
+
 
 # TODO add validation decorator
 # TODO add endpoints

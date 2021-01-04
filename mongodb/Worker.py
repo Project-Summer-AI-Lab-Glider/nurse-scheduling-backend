@@ -1,5 +1,6 @@
 from djongo import models
 
+
 class Worker(models.Model):
     worker_id = models.CharField(max_length=150)
     name = models.CharField(max_length=150)

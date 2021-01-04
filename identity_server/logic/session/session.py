@@ -37,7 +37,6 @@ class SessionState(ABC):
         for required_field in required_params:
             if not actual_params or required_field not in actual_params:
                 request_erros += f'Missing value for field {required_field}\n'
-                continue
         return request_erros
 
     def _get_request_data(self, request):

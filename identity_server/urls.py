@@ -5,6 +5,8 @@ urlpatterns = [
     path('is_authenticated', views.is_authenticated),
     # GET
     path('login', views.login),
+    # GET
+    path('register', views.register),
     # POST
     path('token', views.create_token),
     # POST
