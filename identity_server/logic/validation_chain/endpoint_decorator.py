@@ -42,16 +42,17 @@ class Validator:
 def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None):
     def endpoint_wrapper(func: Callable[[HttpRequest], HttpResponse]):
         @functools.wraps(func)
-        def handler(request: HttpRequest):
+        def handler(request: HttpRequest, **kwargs):
             if request.method not in [item.value for item in allowed_methods]:
                 return HttpResponseNotFound(f"<h1>Method {request.method} {request.path} does not exists</h1>")
             if permissions is not None:
                 metadata = {}
                 method, token = request.META['Authorization'].split(' ')
-                metadata.update({'method': method, 'token': token, 'excepted_permissions': permissions})
+                metadata.update({'method': method, 'token': token,
+                                 'excepted_permissions': permissions})
                 try:
                     Validator(metadata).validate()
-                    return func(request)
+                    return func(request, **kwargs)
                 except Exception as e:
                     print(e)
                     print("NOT VALIDATED")
