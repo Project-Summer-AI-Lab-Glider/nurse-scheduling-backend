@@ -9,37 +9,37 @@ from identity_server.logic.user_logic.user_logic import UserLogic
 from django.http import HttpResponseForbidden, HttpResponse
 
 
-@endpoint(HttpMethod.GET, HttpMethod.POST)
+@endpoint([HttpMethod.GET, HttpMethod.POST])
 def login(request: HttpRequest):
     return SessionManager().handle(request, LoginSession)
 
 
-@endpoint(HttpMethod.GET)
+@endpoint([HttpMethod.GET])
 def is_authenticated(request: HttpRequest):
     return SessionManager().handle(request, LoginSession)
 
 
-@endpoint(HttpMethod.GET)
+@endpoint([HttpMethod.GET])
 def create_token(request: HttpRequest):
     code = request.GET['code']  # code that was previously given to app
     encoded_token = TokenLogic().create_token(code)
     return HttpResponse(json.dumps({'token': encoded_token}))
 
 
-@endpoint(HttpMethod.GET)
+@endpoint([HttpMethod.GET])
 def get_user_info(request):
     id = 1
     user_info = UserLogic(id).get_user_info()
     return HttpResponse(user_info)
 
 
-@endpoint(HttpMethod.POST)
+@endpoint([HttpMethod.POST])
 def refresh_token(request):
     refreshed_token = TokenLogic().refresh_token()
-    return HttpResponse(refresh_token)
+    return HttpResponse(refreshed_token)
 
 
-@endpoint(HttpMethod.POST, HttpMethod.DELETE)
+@endpoint([HttpMethod.POST, HttpMethod.DELETE])
 def revoke_token(request):
     is_accepted, token = TokenLogic().revoke_token()
     if is_accepted:
@@ -48,9 +48,54 @@ def revoke_token(request):
         return HttpResponseForbidden()
 
 
-@endpoint(HttpMethod.GET)
+@endpoint([HttpMethod.GET])
 def introspect_token(request):
     return Http404()
+
+
+@endpoint([HttpMethod.GET])
+def get_contacts(request: HttpRequest):
+    contacts = {
+        'workerId': 'string',
+        'name': 'string',
+        'phoneNumber': 'string',
+    }
+    return HttpResponse(contacts)
+
+
+@endpoint([HttpMethod.GET])
+def get_users(request: HttpRequest):
+    users = [{
+        'workerId': 'string',
+        'name': 'string',
+        'type': 'WorkerType',
+        'workNorm': 1,
+        'phoneNumber': 'string'
+    }]
+    return HttpResponse(users)
+
+
+@endpoint([HttpMethod.GET])
+def get_user(request: HttpRequest):
+    user = {
+        'workerId': 'string',
+        'name': 'string',
+        'type': 'WorkerType',
+        'workNorm': 1,
+        'phoneNumber': 'string'
+    }
+    return HttpResponse(user)
+
+
+@endpoint([HttpMethod.POST])
+def post_user(request: HttpRequest):
+    user = {
+        'workerId': 'string',
+        'name': 'string',
+        'type': 'WorkerType',
+        'workNorm': 1,
+        'phoneNumber': 'string'
+    }
 
 # TODO add validation decorator
 # TODO add endpoints
