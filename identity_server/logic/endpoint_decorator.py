@@ -16,7 +16,7 @@ class HttpMethod(Enum):
     DELETE = 'DELETE'
 
 
-def endpoint(*allowed_methods: List[HttpMethod]):
+def endpoint(*allowed_methods: HttpMethod):
     def endpoint_wrapper(func: Callable[[HttpRequest], HttpResponse]):
         @functools.wraps(func)
         def handler(request: HttpRequest):

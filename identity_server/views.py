@@ -36,7 +36,7 @@ def get_user_info(request):
 @endpoint(HttpMethod.POST)
 def refresh_token(request):
     refreshed_token = TokenLogic().refresh_token()
-    return HttpResponse(refresh_token)
+    return HttpResponse(refreshed_token)
 
 
 @endpoint(HttpMethod.POST, HttpMethod.DELETE)
@@ -51,6 +51,51 @@ def revoke_token(request):
 @endpoint(HttpMethod.GET)
 def introspect_token(request):
     return Http404()
+
+
+@endpoint(HttpMethod.GET)
+def get_contacts(request: HttpRequest):
+    contacts = {
+        'workerId': 'string',
+        'name': 'string',
+        'phoneNumber': 'string',
+    }
+    return HttpResponse(contacts)
+
+
+@endpoint(HttpMethod.GET)
+def get_users(request: HttpRequest):
+    users = [{
+        'workerId': 'string',
+        'name': 'string',
+        'type': 'WorkerType',
+        'workNorm': 1,
+        'phoneNumber': 'string'
+    }]
+    return HttpResponse(users)
+
+
+@endpoint(HttpMethod.GET)
+def get_user(request: HttpRequest):
+    user = {
+        'workerId': 'string',
+        'name': 'string',
+        'type': 'WorkerType',
+        'workNorm': 1,
+        'phoneNumber': 'string'
+    }
+    return HttpResponse(user)
+
+
+@endpoint(HttpMethod.POST)
+def post_user(request: HttpRequest):
+    user = {
+        'workerId': 'string',
+        'name': 'string',
+        'type': 'WorkerType',
+        'workNorm': 1,
+        'phoneNumber': 'string'
+    }
 
 # TODO add validation decorator
 # TODO add endpoints
