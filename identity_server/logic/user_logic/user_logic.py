@@ -1,14 +1,35 @@
+import json
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from typing import List
+
+from django.core import serializers
 from mongodb.Worker import Worker
 from mongodb.WorkerShift import WorkerShift
-from django.core import serializers
-import json
-from dataclasses import dataclass
 
 
 @dataclass
 class User:
     name: str
+    surname: str
     password: str
+    work_type: str
+    work_norm: str
+    phone_number: int
+    id: str = None
+
+    @classmethod
+    def required_fields(cls) -> List[str]:
+        all_fields = cls.__dataclass_fields__.values()
+        return [field.name for field in all_fields if field.default is not None]
+
+    @classmethod
+    def from_kwargs(cls, **kwargs) -> 'User':
+        native_args = {}
+        for name, val in kwargs.items():
+            if name in cls.__annotations__:
+                native_args[name] = val
+        return User(**native_args)
 
 
 class UserLogic:
@@ -16,12 +37,19 @@ class UserLogic:
         super().__init__()
 
     def get_contact(self, user_id):
-        worker = Worker.objects.filter(worker_id=1).last()
-        return json.dumps({
-            'workerId': worker.worker_id,
+        worker = Worker.objects.get(id=user_id)
+        return json.dumps(self._extract_contact_data(worker))
+
+    def get_contacts(self):
+        workers = Worker.objects.all()
+        return json.dumps([self._extract_contact_data(worker) for worker in workers])
+
+    def _extract_contact_data(self, worker: Worker):
+        return {
+            'workerId': worker.id,
             'name': worker.name,
             'phoneNumber': worker.phone_number,
-        })
+        }
 
     def get_all_users(self):
         all_workers = Worker.objects.all()
@@ -29,34 +57,23 @@ class UserLogic:
         return json.dumps(all_workers_json)
 
     def get_user(self, user_id):
-        worker = Worker.objects.filter(worker_id=user_id)
+        worker = Worker.objects.get(id=user_id)
         worker_json = self._serialize_object(worker)
         return json.dumps(worker_json[0])
 
-    def create_user(self, worker):
-        Worker.objects.create(worker_id=worker.worker_id,
-                              name=worker.name,
-                              surname=worker.surname,
-                              work_type=worker.work_type,
-                              work_norm=worker.work_norm,
-                              phone_number=worker.phone_number)
+    def create_user(self, user: User):
+        worker = Worker.objects.create(**asdict(user))
+        user.id = worker.id
 
-    def get_worker_shift(self, worker_id, fromDate, toDate):
-        workers_shifts = WorkerShift.objects.filter(worker_id=worker_id)
-        workers_shifts = workers_shifts.filter(day__range=(fromDate, toDate))
+    def get_worker_shift(self, worker_id: int, fromDate: datetime, toDate: datetime):
+        workers_shifts = WorkerShift.objects.filter(
+            id=worker_id, day__range=(fromDate, toDate))
+        # workers_shifts = workers_shifts.filter()
         worker_shift_json = self._serialize_object(workers_shifts)
         return json.dumps(worker_shift_json)
 
-    def create_worke_shift(self, worker_shift):
-        WorkerShift.objects.create(
-            worker_id=worker_shift.worker_id,
-            fromHour=worker_shift.fromHour,
-            toHour=worker_shift.toHour,
-            code=worker_shift.code,
-            name=worker_shift.name,
-            isWorking=worker_shift.isWorking,
-            day=worker_shift.day
-        )
+    def create_worke_shift(self, worker_shift: WorkerShift):
+        WorkerShift.objects.create(vars(worker_shift))
 
     def _serialize_object(self, querySet):
         serializedJson = serializers.serialize("json", querySet)

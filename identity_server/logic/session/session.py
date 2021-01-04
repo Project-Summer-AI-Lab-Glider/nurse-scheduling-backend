@@ -47,6 +47,9 @@ class SessionState(ABC):
         else:
             raise Exception(f"Unsupported request method {request.method}")
         return data
+    
+    def bad_request(self, reason: str) -> HttpResponse:
+        return HttpResponse(status=400, content_type="application/json", content=reason)
 
     @abstractmethod
     def process_request(self, request):

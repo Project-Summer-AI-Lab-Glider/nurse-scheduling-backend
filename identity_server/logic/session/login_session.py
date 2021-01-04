@@ -57,6 +57,7 @@ class InitialLoginState(SessionState):
         """
         Makes request to the database to get actual application name associated with given client id 
         """
+        # TODO DB
         return 'App'
 
 
@@ -88,9 +89,9 @@ class WaitingForPermissions(SessionState):
         name = self._get_request_data(request)['name']
         code = self._generate_code()
         worker = Worker.objects.filter(name=name).last()
-        worker_id = worker.worker_id
-
-        self._save_to_database(code, client_id, worker_id,
+        if not worker:
+            return self.bad_request("Bad username or password")
+        self._save_to_database(code, client_id, worker.id,
                                self.session_context.scope)
         self.set_session_state(LoggedIn)
         return self.ok(json.dumps({'callback_url': f'{self.session_context.callback_url}?code={code}'}))

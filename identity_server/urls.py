@@ -14,7 +14,9 @@ urlpatterns = [
     # POST
     path('introspect', views.introspect_token),
     # GET
-    path('contacts/<int:user_id>', views.get_contacts),
+    path('contacts', views.get_contacts),
+    # GET
+    path('contacts/<int:user_id>', views.get_user_contacts),
     # GET
     path('users/<int:user_id>', views.get_user),
     # GET
@@ -25,4 +27,6 @@ urlpatterns = [
     path('worker_shifts/<int:user_id>', views.get_workers_shift),
     # POST
     path('create_worker_shift/<int:user_id>', views.create_shift),
+    # GET
+    path('is_active', views.is_active)
 ]

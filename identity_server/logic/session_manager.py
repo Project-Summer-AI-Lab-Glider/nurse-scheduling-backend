@@ -1,6 +1,10 @@
+
+import binascii
+import base64
 from identity_server.logic.session.session import Session
 from identity_server.logic.session.invalid_session import InvalidSession
 from django.http.request import HttpRequest
+import uuid
 
 
 class Singleton(type):
@@ -15,27 +19,29 @@ class Singleton(type):
 
 class SessionManager(metaclass=Singleton):
     _sessions = {}
+    session_id_cookie = 'session'
 
     def handle(self, request: HttpRequest, session_type: type):
-        if not 'session' in request.COOKIES:
-            session_id = self._create_session_id()
-        else:
-            session_id = request.COOKIES['session']
+        print("Request: ", request.COOKIES,
+              "Sessions: ", self._sessions.keys())
+        session_id = request.COOKIES.setdefault(
+            self.session_id_cookie, self._create_session_id())
+
         session = self._get_session(session_id, session_type)
         result = session.handle(request)
         if session.is_finished:
             self._end_session(session_id)
-        # TODO assign cookie with session id to result
+        result.set_cookie(self.session_id_cookie,
+                          session_id, max_age=60*60*24*5, secure=False, samesite=False)
         return result
 
     def _create_session_id(self):
-        # TODO add function to generate code. Should be from 4 to 11 symbols
-        return '1111'
+        return uuid.uuid4()
 
     def _is_valid(self, request: HttpRequest):
-        return 'session' in request.COOKIES
+        return self.session_id_cookie in request.COOKIES
 
-    def _get_session(self, session_id: HttpRequest, session_type: type) -> Session:
+    def _get_session(self, session_id: str, session_type: type) -> Session:
         if not session_id or session_id not in self._sessions:
             self._sessions[session_id] = session_type()
         return self._sessions[session_id]

@@ -1,5 +1,5 @@
 <head>
-    <title>Login</title>
+    <title>Create account</title>
 </head>
 <style>
     .container {
@@ -28,10 +28,14 @@
     {% csrf_token %}
     <div>
         {% for required_field in required_fields %}
-            <input name="{{required_field}}" placeholder="{{required_field}}" autocomplete="off"/>
+            {% if required_field == "password" %}
+                <input name="{{required_field}}" placeholder="{{required_field}}" type="password" autocomplete="off"/>
+            {% else %}
+                <input name="{{required_field}}" placeholder="{{required_field}}" autocomplete="off"/>
+            {% endif %}
         {% endfor %}
     </div>
-    <button onclick="onFormSubmit(event)">Accept</button>
+    <button onclick="onFormSubmit(event)">Create account</button>
     
 </form>
 
@@ -46,6 +50,7 @@
         XHR.onreadystatechange = function() {
             if(this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
+                console.log(response);
             }
         }
     }       

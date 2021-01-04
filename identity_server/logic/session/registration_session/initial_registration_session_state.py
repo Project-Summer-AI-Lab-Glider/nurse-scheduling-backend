@@ -7,4 +7,4 @@ class InitialRegistrationSessionState(SessionState):
 
     def process_request(self, request):
         self.set_session_state(WaitingForRegistrationData)
-        return self.render_html(request, 'registration_page.html', {'required_fields': User.__dataclass_fields__.keys()})
+        return self.render_html(request, 'registration_page.html', {'required_fields': User.required_fields()})

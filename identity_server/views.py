@@ -1,29 +1,30 @@
-from identity_server.logic.session.registration_session.registration_session import RegistrationSession
-from identity_server.logic.session.session import Session
 import json
-from identity_server.logic.session.login_session import LoginSession
-from identity_server.logic.session_manager import SessionManager
-from identity_server.logic.validation_chain.endpoint_decorator import HttpMethod, endpoint
+
+from django.http import HttpResponse, HttpResponseForbidden
 from django.http.request import HttpRequest
-from django.http.response import Http404
-from identity_server.logic.token_logic.token_logic import TokenLogic
-from identity_server.logic.user_logic.user_logic import UserLogic
-from django.http import HttpResponseForbidden, HttpResponse
+from django.http.response import Http404, HttpResponseForbidden
 from mongodb.Worker import Worker
 from mongodb.WorkerShift import WorkerShift
+
+from identity_server.logic.endpoint_decorator import HttpMethod, endpoint
+from identity_server.logic.session.login_session import LoginSession
+from identity_server.logic.session.registration_session.registration_session import \
+    RegistrationSession
+from identity_server.logic.session.session import Session
+from identity_server.logic.session_manager import SessionManager
+from identity_server.logic.token_logic.token_logic import TokenLogic
+from identity_server.logic.user_logic.user_logic import User, UserLogic
+from identity_server.logic.validation_chain.endpoint_decorator import (
+    HttpMethod, endpoint)
 
 
 @endpoint(HttpMethod.GET, HttpMethod.POST)
 def login(request: HttpRequest):
-    print(request.POST)
-    print(request.GET)
     return SessionManager().handle(request, LoginSession)
 
 
 @endpoint(HttpMethod.GET, HttpMethod.POST)
 def register(request: HttpRequest):
-    print(request.POST)
-    print(request.GET)
     return SessionManager().handle(request, RegistrationSession)
 
 
@@ -60,7 +61,13 @@ def introspect_token(request):
 
 
 @endpoint(HttpMethod.GET)
-def get_contacts(request: HttpRequest, user_id):
+def get_contacts(request):
+    contacts = UserLogic().get_contacts()
+    return HttpResponse(contacts)
+
+
+@endpoint(HttpMethod.GET)
+def get_user_contacts(request: HttpRequest, user_id):
     contacts = UserLogic().get_contact(user_id)
     return HttpResponse(contacts)
 
@@ -79,16 +86,9 @@ def get_user(request: HttpRequest, user_id):
 
 @endpoint(HttpMethod.POST)
 def create_user(request: HttpRequest):
-    worker = Worker(worker_id='3',
-                    name='Anna',
-                    surname='Kowalskowa',
-                    work_type='0',
-                    work_norm='0',
-                    phone_number='999-999-999')
-    UserLogic().create_user(worker)
-    return HttpResponse('success')
-
-# worker_shifts/1?from=2021-01-01&to=2021-01-05
+    user_data = json.loads(request.body)
+    UserLogic().create_user(User.from_kwargs(**user_data))
+    return HttpResponse(json.dumps('success'))
 
 
 @endpoint(HttpMethod.GET)
@@ -109,61 +109,9 @@ def create_shift(request: HttpRequest, user_id):
                                isWorking=False,
                                day='2021-01-01')
     UserLogic().create_worke_shift(worker_shift)
-    return HttpResponse('success')
+    return HttpResponse(json.dumps({'is_success': True}))
 
 
-# TODO add validation decorator
-# TODO add endpoints
-# 1. GET contacts
-# Returns
-#  Worker {
-#   workerId: string;
-#   name: string;
-#   phoneNumber: string;
-# }
-# 2. GET users
-# Returns:
-# [Worker {
-#   workerId: string;
-#   name: string;
-#   type: WorkerType;
-#   workNorm: number; // 0 - 1
-#   phoneNumber: string;
-# }]
-# 3. GET users/{id}
-# Returns
-# Worker {
-#   workerId: string;
-#   name: string;
-#   type: WorkerType;
-#   workNorm: number; // 0 - 1
-#   phoneNumber: string;
-# }
-# 4. POST user
-# Accepts:
-# Worker {
-#   workerId: string;
-#   name: string;
-#   type: WorkerType;
-#   workNorm: number; // 0 - 1
-#   phoneNumber: string;
-# }
-# 5. GET shifts/{worker_id}?from=yyyy.mm.dd&to=yyyy.mm.dd
-# Returns:
-# [Shift {
-#   fromHour: number; // 0 - 24
-#   toHour: number;
-#   code: string;
-#   name: string;
-#   isWorking: boolean;
-#   day: number
-# }]
-#  6. POST shifts/{worker_id}
-# [Shift {
-#   fromHour: number; // 0 - 24
-#   toHour: number;
-#   code: string;
-#   name: string;
-#   isWorking: boolean;
-#   day: number
-# }]
+@endpoint(HttpMethod.GET)
+def is_active(self):
+    return HttpResponse(json.dumps({'is_active': True}))
