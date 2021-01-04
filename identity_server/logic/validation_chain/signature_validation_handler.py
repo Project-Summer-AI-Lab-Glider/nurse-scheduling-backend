@@ -15,7 +15,7 @@ class SignatureValidator(Handler):
         return hmac.compare_digest(sign1, sign2)
 
     def handle(self, legal_signature: bytes,
-               signature: bytes, **kwargs) -> Optional[str]:
+               signature: bytes, **kwargs) -> bool:
         self.legal_signature = legal_signature
         self.signature = signature
         if self._compare_signatures(self.legal_signature, self.signature):

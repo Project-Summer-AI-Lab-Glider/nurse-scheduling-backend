@@ -4,14 +4,14 @@ from typing import Optional
 from identity_server.logic.validation_chain.handler import Handler
 
 
-class PermissionValidator(Handler):
+class ExpirationDateValidator(Handler):
     def __init__(self):
         super().__init__()
         self.exp_time = 0.0
 
-    def handle(self, exp_time, **kwargs) -> Optional[str]:
+    def handle(self, exp_time, **kwargs) -> bool:
         self.exp_time = exp_time
-        if self._check_expire():
+        if not self._check_expire():
             return super().handle(**kwargs)
         else:
             raise Exception("Token Expired")
