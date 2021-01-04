@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import abstractmethod
-from typing import Any, Optional
+from typing import Optional
 
 
 class Handler:
@@ -13,8 +13,5 @@ class Handler:
         return handler
 
     @abstractmethod
-    def handle(self, request: Any) -> Optional[bool]:
-        if self._next_handler:
-            return self._next_handler.handle(request)
-
-        return None
+    def handle(self, **kwargs) -> Optional[bool]:
+        pass

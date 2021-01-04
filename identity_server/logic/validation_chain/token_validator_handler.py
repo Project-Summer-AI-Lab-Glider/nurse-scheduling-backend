@@ -1,8 +1,6 @@
 import base64
 import hmac
 import json
-import time
-from typing import Any
 
 from identity_server.logic.validation_chain.handler import Handler
 
@@ -18,14 +16,22 @@ class TokenValidator(Handler):
         self.payload = {}
         self.token = ''
         self.exp_time = 0.0
+        self.legal_signature = ''
+        self.signature = ''
         self.initialized = False
 
-    def handle(self, request: Any):
-        self.init(request)
+    def handle(self, token, **kwargs):
+        self.init(token)
         if self._validate_token():
-            return super().handle(self.permissions)
+            return super().handle(**{**kwargs,
+                                     'permissions': self.permissions,
+                                     'header': self.header,
+                                     'exp_time': self.exp_time,
+                                     'signature': self.signature,
+                                     'legal_signature': self.legal_signature,
+                                     })
         else:
-            return False
+            raise Exception("Invalid Token")
 
     def init(self, token) -> None:
         self.token = token
@@ -35,10 +41,6 @@ class TokenValidator(Handler):
     def _base64_decode(statement: str) -> bytes:
         statement += '=' * (-len(statement) % 4)
         return base64.urlsafe_b64decode(statement)
-
-    @staticmethod
-    def _compare_signatures(sign1: bytes, sign2: bytes) -> bool:
-        return hmac.compare_digest(sign1, sign2)
 
     def _read_payload(self, payload) -> None:
         self.payload = json.loads(payload.decode("utf-8"))
@@ -51,12 +53,6 @@ class TokenValidator(Handler):
         self.permissions = self.payload['permissions']
         self.exp_time = self.payload['exp']
 
-    def _check_expire(self) -> bool:
-        return time.time() > self.exp_time
-
-    def _validate_header(self) -> bool:
-        return self.header == b'{"typ": "JWT", "alg": "HS256"}'
-
     def _validate_token(self):
         try:
             if not self.initialized:
@@ -65,15 +61,9 @@ class TokenValidator(Handler):
             payload = self._base64_decode(payload_enc)
             self._read_payload(payload)
             self.header = self._base64_decode(header_enc)
-            signature = self._base64_decode(signature_enc)
-            legal_signature = self._create_signature(header_enc + '.' + payload_enc)
-            if not self._compare_signatures(legal_signature, signature):
-                raise Exception("Invalid Signature")
-            if not self._validate_header():
-                raise Exception("Invalid Header")
+            self.signature = self._base64_decode(signature_enc)
+            self.legal_signature = self._create_signature(header_enc + '.' + payload_enc)
             self._extract_payloads()
-            if self._check_expire():
-                raise Exception("Token expired")
             return True
         except Exception as e:
             print(e)
@@ -81,4 +71,3 @@ class TokenValidator(Handler):
 
     def __str__(self) -> str:
         return self.token
-

@@ -1,9 +1,9 @@
 import json
 from identity_server.logic.session.login_session import LoginSession
 from identity_server.logic.session_manager import SessionManager
-from identity_server.logic.endpoint_decorator import HttpMethod, endpoint
+from identity_server.logic.validation_chain.endpoint_decorator import HttpMethod, endpoint
 from django.http.request import HttpRequest
-from django.http.response import Http404, HttpResponseForbidden
+from django.http.response import Http404
 from identity_server.logic.token_logic.token_logic import TokenLogic
 from identity_server.logic.user_logic.user_logic import UserLogic
 from django.http import HttpResponseForbidden, HttpResponse
