@@ -7,3 +7,12 @@
     work_type: TYPE
     work_norm: 1 
     phone_number: 888-888-888
+
+  pk: 2
+  fields:
+    worker_id: 2 
+    name: Agnieszka 
+    surname: Kowalczyk
+    work_type: TYPE
+    work_norm: 0 
+    phone_number: 777-777-777

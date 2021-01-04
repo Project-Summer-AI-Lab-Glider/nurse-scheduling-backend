@@ -1,0 +1,50 @@
+- model: mongodb.WorkerShift  
+  pk: 1
+  fields:
+    worker_id: 1
+    fromHour: 7
+    toHour: 20
+    code: 1
+    name: L
+    isWorking: true
+    day: 2021-01-03
+- model: mongodb.WorkerShift
+  pk: 2
+  fields:
+    worker_id: 1
+    fromHour: 17
+    toHour: 20
+    code: 1
+    name: M
+    isWorking: true
+    day: 2021-01-04
+- model: mongodb.WorkerShift
+  pk: 3
+  fields:
+    worker_id: 1
+    fromHour: 13
+    toHour: 23
+    code: 1
+    name: V
+    isWorking: false
+    day: 2021-01-05
+- model: mongodb.WorkerShift
+  pk: 4
+  fields:
+    worker_id: 2
+    fromHour: 4
+    toHour: 12
+    code: 1
+    name: K
+    isWorking: true
+    day: 2021-01-06
+- model: mongodb.WorkerShift
+  pk: 5
+  fields:
+    worker_id: 2
+    fromHour: 7
+    toHour: 20
+    code: 1
+    name: L
+    isWorking: true
+    day: 2021-01-04

@@ -19,9 +19,9 @@ class HttpMethod(Enum):
 def endpoint(*allowed_methods: HttpMethod):
     def endpoint_wrapper(func: Callable[[HttpRequest], HttpResponse]):
         @functools.wraps(func)
-        def handler(request: HttpRequest):
+        def handler(request: HttpRequest, **kwargs):
             if request.method not in [item.value for item in allowed_methods]:
                 return HttpResponseNotFound(f"<h1>Method {request.method} {request.path} does not exists</h1>")
-            return func(request)
+            return func(request, **kwargs)
         return handler
     return endpoint_wrapper
