@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'identity_server.apps.IdentityServerConfig',
-    'mongodb'
+    'mongodb',
 ]
 
 MIDDLEWARE = [

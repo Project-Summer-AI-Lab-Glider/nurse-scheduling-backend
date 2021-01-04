@@ -7,6 +7,8 @@ from django.http.response import Http404, HttpResponseForbidden
 from identity_server.logic.token_logic.token_logic import TokenLogic
 from identity_server.logic.user_logic.user_logic import UserLogic
 from django.http import HttpResponseForbidden, HttpResponse
+from mongodb.Worker import Worker
+from mongodb.WorkerShift import WorkerShift
 
 
 @endpoint(HttpMethod.GET, HttpMethod.POST)
@@ -24,13 +26,6 @@ def create_token(request: HttpRequest):
     code = request.GET['code']  # code that was previously given to app
     encoded_token = TokenLogic().create_token(code)
     return HttpResponse(json.dumps({'token': encoded_token}))
-
-
-@endpoint(HttpMethod.GET)
-def get_user_info(request):
-    id = 1
-    user_info = UserLogic(id).get_user_info()
-    return HttpResponse(user_info)
 
 
 @endpoint(HttpMethod.POST)
@@ -54,48 +49,55 @@ def introspect_token(request):
 
 
 @endpoint(HttpMethod.GET)
-def get_contacts(request: HttpRequest):
-    contacts = {
-        'workerId': 'string',
-        'name': 'string',
-        'phoneNumber': 'string',
-    }
+def get_contacts(request: HttpRequest, user_id):
+    contacts = UserLogic().get_contact(user_id)
     return HttpResponse(contacts)
 
 
 @endpoint(HttpMethod.GET)
 def get_users(request: HttpRequest):
-    users = [{
-        'workerId': 'string',
-        'name': 'string',
-        'type': 'WorkerType',
-        'workNorm': 1,
-        'phoneNumber': 'string'
-    }]
+    users = UserLogic().get_all_users()
     return HttpResponse(users)
 
 
 @endpoint(HttpMethod.GET)
-def get_user(request: HttpRequest):
-    user = {
-        'workerId': 'string',
-        'name': 'string',
-        'type': 'WorkerType',
-        'workNorm': 1,
-        'phoneNumber': 'string'
-    }
+def get_user(request: HttpRequest, user_id):
+    user = UserLogic().get_user(user_id)
     return HttpResponse(user)
 
 
 @endpoint(HttpMethod.POST)
-def post_user(request: HttpRequest):
-    user = {
-        'workerId': 'string',
-        'name': 'string',
-        'type': 'WorkerType',
-        'workNorm': 1,
-        'phoneNumber': 'string'
-    }
+def create_user(request: HttpRequest):
+    worker = Worker(worker_id='3', 
+                name='Anna',  
+                surname='Kowalskowa', 
+                work_type='0', 
+                work_norm='0',
+                phone_number='999-999-999')
+    UserLogic().create_user(worker)
+    return HttpResponse('success')
+
+#worker_shifts/1?from=2021-01-01&to=2021-01-05
+@endpoint(HttpMethod.GET)
+def get_workers_shift(request: HttpRequest, user_id):
+    fromDate = request.GET.get('from','')
+    toDate = request.GET.get('to','')
+    worker_shifts = UserLogic().get_worker_shift(user_id, fromDate, toDate)
+    return HttpResponse(worker_shifts)
+
+
+@endpoint(HttpMethod.POST)
+def create_shift(request: HttpRequest, user_id):
+    worker_shift = WorkerShift(worker_id=user_id,
+                                fromHour=0,
+                                toHour=12,
+                                code='CODE',
+                                name='NAME',
+                                isWorking=False,
+                                day='2021-01-01')
+    UserLogic().create_worke_shift(worker_shift)
+    return HttpResponse('success')
+    
 
 # TODO add validation decorator
 # TODO add endpoints
