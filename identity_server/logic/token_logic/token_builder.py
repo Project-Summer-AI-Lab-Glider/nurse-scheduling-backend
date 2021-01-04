@@ -16,7 +16,7 @@ class TokenBuilder:
         self.seconds_to_expire = 1
         self.initialized = False
 
-    def init(self, permissions: str, user_id: str) -> None:
+    def init(self, permissions: [str], user_id: str) -> None:
         self._add_permissions(permissions)
         self._add_user_id(user_id)
         self._generate_payload()
@@ -58,3 +58,8 @@ class TokenBuilder:
 
     def __str__(self) -> str:
         return self.token
+
+
+tb = TokenBuilder()
+tb.init(['RWX'], 'user')
+print(tb.generate_token())

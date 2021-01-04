@@ -4,7 +4,10 @@ from django.http.response import HttpResponse, HttpResponseNotFound
 from typing import Callable, List
 from enum import Enum
 
+from identity_server.logic.validation_chain.expiration_date_validation_handler import ExpirationDateValidator
+from identity_server.logic.validation_chain.header_validation_handler import HeaderValidator
 from identity_server.logic.validation_chain.permission_validation_handler import PermissionValidator
+from identity_server.logic.validation_chain.signature_validation_handler import SignatureValidator
 from identity_server.logic.validation_chain.token_validator_handler import TokenValidator
 
 
@@ -26,7 +29,8 @@ class HttpMethod(Enum):
 
 class Validator:
     def __init__(self, request: {}):
-        self.validation_chain = [TokenValidator(), PermissionValidator()]
+        self.validation_chain = [TokenValidator(), SignatureValidator(), HeaderValidator(), PermissionValidator(),
+                                 ExpirationDateValidator()]
         self.request = request
         for i in range(len(self.validation_chain) - 1):
             self.validation_chain[i].set_next(self.validation_chain[i + 1])
@@ -55,3 +59,14 @@ def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None
         return handler
 
     return endpoint_wrapper
+
+# TODO REMOVE
+# metadata = {}
+# permissions = ['RWX']
+# token = 'eyJ0eXAiOiAiSldUIiwgImFsZyI6ICJIUzI1NiJ9.eyJ1c2VySWQiOiAidXNlciIsICJwZXJtaXNzaW9ucyI6IFsiUldYIl0sICJleHAiOiAxNjA5NzkyMjczLjE1MDA0MX0.F9Xs4q0qutFioOLrr3yLOlaxSCLOcEBZhDZcFcs5vGU'
+# metadata.update({'token': token, 'excepted_permissions': permissions})
+# try:
+#     Validator(metadata).validate()
+# except Exception as e:
+#     print(e)
+#     print("NOT VALIDATED")

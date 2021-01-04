@@ -13,5 +13,8 @@ class Handler:
         return handler
 
     @abstractmethod
-    def handle(self, **kwargs) -> Optional[bool]:
-        pass
+    def handle(self, **kwargs) -> bool:
+        if self._next_handler:
+            return self._next_handler.handle(**kwargs)
+
+        return True

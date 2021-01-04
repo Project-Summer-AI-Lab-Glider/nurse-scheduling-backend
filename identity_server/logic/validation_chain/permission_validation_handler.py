@@ -9,7 +9,7 @@ class PermissionValidator(Handler):
         self.permissions = ''
         self.excepted_permissions = ''
 
-    def handle(self, permissions: [str], excepted_permissions: [str], **kwargs) -> Optional[str]:
+    def handle(self, permissions: [str], excepted_permissions: [str], **kwargs) -> bool:
         self.permissions = permissions
         self.excepted_permissions = excepted_permissions
         if self._validate_permissions():
