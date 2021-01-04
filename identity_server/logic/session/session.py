@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
-from identity_server.logic.endpoint_decorator import HttpMethod
+from identity_server.logic.validation_chain.endpoint_decorator import HttpMethod
 from typing import List, Type
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseForbidden
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from dataclasses import dataclass
 
 
