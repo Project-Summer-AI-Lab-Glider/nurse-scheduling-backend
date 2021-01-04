@@ -1,6 +1,7 @@
 import base64
 import hmac
 import json
+import time
 
 
 class TokenBuilder:
@@ -12,9 +13,10 @@ class TokenBuilder:
             {'typ': 'JWT', 'alg': 'HS256'}).encode('utf-8')
         self.payload = ''.encode('utf-8')
         self.token = ''
+        self.seconds_to_expire = 1800
         self.initialized = False
 
-    def init(self, permissions: str, user_id: str) -> None:
+    def init(self, permissions: [str], user_id: str) -> None:
         self._add_permissions(permissions)
         self._add_user_id(user_id)
         self._generate_payload()
@@ -32,7 +34,10 @@ class TokenBuilder:
 
     def _generate_payload(self) -> None:
         self.payload = json.dumps(
-            {"userId": self.user_id, "permissions": self.permissions}).encode('utf-8')
+            {"userId": self.user_id,
+             "permissions": self.permissions,
+             "exp": time.time() + self.seconds_to_expire
+             }).encode('utf-8')
 
     def _create_signature(self, unsigned_token: str) -> bytes:
         return hmac.new(bytes(self.SECRET_KEY, 'latin-1'), unsigned_token.encode('utf-8'), 'sha256').digest()
@@ -53,3 +58,8 @@ class TokenBuilder:
 
     def __str__(self) -> str:
         return self.token
+
+
+# tb = TokenBuilder()
+# tb.init(['RWX'], 'user')
+# print(tb.generate_token())
