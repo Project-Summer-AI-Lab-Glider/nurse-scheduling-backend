@@ -28,10 +28,10 @@ class HttpMethod(Enum):
 
 
 class Validator:
-    def __init__(self, request: {}):
+    def __init__(self, metadata: {}):
         self.validation_chain = [TokenValidator(), SignatureValidator(), HeaderValidator(), PermissionValidator(),
                                  ExpirationDateValidator()]
-        self.request = request
+        self.request = metadata
         for i in range(len(self.validation_chain) - 1):
             self.validation_chain[i].set_next(self.validation_chain[i + 1])
 
