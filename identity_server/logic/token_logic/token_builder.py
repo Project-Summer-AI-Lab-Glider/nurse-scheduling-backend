@@ -13,7 +13,7 @@ class TokenBuilder:
             {'typ': 'JWT', 'alg': 'HS256'}).encode('utf-8')
         self.payload = ''.encode('utf-8')
         self.token = ''
-        self.seconds_to_expire = 1
+        self.seconds_to_expire = 1800
         self.initialized = False
 
     def init(self, permissions: [str], user_id: str) -> None:
@@ -60,6 +60,6 @@ class TokenBuilder:
         return self.token
 
 
-tb = TokenBuilder()
-tb.init(['RWX'], 'user')
-print(tb.generate_token())
+# tb = TokenBuilder()
+# tb.init(['RWX'], 'user')
+# print(tb.generate_token())
