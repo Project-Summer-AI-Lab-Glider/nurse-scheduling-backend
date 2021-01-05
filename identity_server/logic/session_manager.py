@@ -22,8 +22,6 @@ class SessionManager(metaclass=Singleton):
     session_id_cookie = 'session'
 
     def handle(self, request: HttpRequest, session_type: type):
-        print("Request: ", request.COOKIES,
-              "Sessions: ", self._sessions.keys())
         session_id = request.COOKIES.setdefault(
             self.session_id_cookie, self._create_session_id())
 

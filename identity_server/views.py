@@ -6,11 +6,9 @@ from django.http.response import Http404, HttpResponseForbidden
 from mongodb.Worker import Worker
 from mongodb.WorkerShift import WorkerShift
 
-from identity_server.logic.endpoint_decorator import HttpMethod, endpoint
 from identity_server.logic.session.login_session import LoginSession
 from identity_server.logic.session.registration_session.registration_session import \
     RegistrationSession
-from identity_server.logic.session.session import Session
 from identity_server.logic.session_manager import SessionManager
 from identity_server.logic.token_logic.token_logic import TokenLogic
 from identity_server.logic.user_logic.user_logic import User, UserLogic
