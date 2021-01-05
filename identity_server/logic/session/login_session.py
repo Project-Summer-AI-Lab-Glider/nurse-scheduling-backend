@@ -1,3 +1,4 @@
+from identity_server.logic.session.common_states import LoggedIn
 import json
 from dataclasses import dataclass, field
 from typing import List
@@ -56,6 +57,7 @@ class InitialLoginState(SessionState):
         """
         Makes request to the database to get actual application name associated with given client id 
         """
+        # TODO DB
         return 'App'
 
 
@@ -87,9 +89,10 @@ class WaitingForPermissions(SessionState):
         name = self._get_request_data(request)['name']
         code = self._generate_code()
         worker = Worker.objects.filter(name=name).last()
-        worker_id = worker.worker_id
-        
-        self._save_to_database(code, client_id, worker_id, self.session_context.scope)
+        if not worker:
+            return self.bad_request("Bad username or password")
+        self._save_to_database(code, client_id, worker.id,
+                               self.session_context.scope)
         self.set_session_state(LoggedIn)
         return self.ok(json.dumps({'callback_url': f'{self.session_context.callback_url}?code={code}'}))
 
@@ -100,11 +103,6 @@ class WaitingForPermissions(SessionState):
     def _save_to_database(self, code, client_id, worker_id, scope):
         # TODO DB DONE
         ApplicationAccount.objects.create(client_id=client_id, worker_id=worker_id,
-        permissions=scope)
-        print(f'Saving {client_id} associated with code: {code} and scope: {scope} to database')
-
-
-class LoggedIn(SessionState):
-    def process_request(self, request):
-        # TODO DB
-        return self.ok(json.dumps({'is_authenticated': True}))
+                                          permissions=scope)
+        print(
+            f'Saving {client_id} associated with code: {code} and scope: {scope} to database')
