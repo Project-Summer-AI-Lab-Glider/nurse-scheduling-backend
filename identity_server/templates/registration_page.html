@@ -1,0 +1,65 @@
+<head>
+    <title>Create account</title>
+</head>
+<style>
+    .container {
+        display: flex;
+        align-items: center;
+    }
+    #permissions {
+        display: none;
+    }
+    input{
+        display: block;
+        margin: 10px;
+    }
+
+    button {
+        border-radius: 5px;
+        margin: 5px
+    }
+</style>
+
+<div container="content">
+
+<h1>Creating an account</h1>
+
+<form id="info" onsubmit="event.preventDefault()">
+    {% csrf_token %}
+    <div>
+        {% for required_field in required_fields %}
+            {% if required_field == "password" %}
+                <input name="{{required_field}}" placeholder="{{required_field}}" type="password" autocomplete="off"/>
+            {% else %}
+                <input name="{{required_field}}" placeholder="{{required_field}}" autocomplete="off"/>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <button onclick="onFormSubmit(event)">Create account</button>
+    
+</form>
+
+</div>
+
+</body>
+<script>    
+    function sendData(data) {
+        const XHR = new XMLHttpRequest();
+        XHR.open( "POST", "register" );
+        XHR.send(JSON.stringify(data));
+        XHR.onreadystatechange = function() {
+            if(this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                const response = JSON.parse(this.response)
+                console.log(response);
+            }
+        }
+    }       
+    
+    function onFormSubmit(e) {
+        e.preventDefault();
+        
+        const userInfo = document.getElementById("info");     
+        const data = Object.fromEntries(new FormData(userInfo).entries());        
+        sendData(data);
+    }
+</script>

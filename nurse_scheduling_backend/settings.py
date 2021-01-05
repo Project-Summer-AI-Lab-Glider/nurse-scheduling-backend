@@ -25,7 +25,16 @@ SECRET_KEY = 'lx$97uvtr4b3=-(4+9wq28)3f+)33q^^q2j43k)hd#pwpld_-e'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\w+$",
+    r"^http://127.0.0.1:\w+$",
+]
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1'
+]
 
 
 # Application definition
@@ -80,17 +89,17 @@ DATABASES = {
     'default': {
         'ENGINE': 'djongo',
         "CLIENT": {
-           "name": 'application_db',
-           "host": 'mongodb+srv://admin:admin@cluster0.ygawx.mongodb.net/application_db?retryWrites=true&w=majority',
-           "username": 'admin',
-           "password": 'admin',
-           "authMechanism": "SCRAM-SHA-1",
-        }, 
-      }
+            "name": 'application_db',
+            "host": 'mongodb+srv://admin:admin@cluster0.ygawx.mongodb.net/application_db?retryWrites=true&w=majority',
+            "username": 'admin',
+            "password": 'admin',
+            "authMechanism": "SCRAM-SHA-1",
+        },
+    }
 }
 
 FIXTURE_DIRS = (
-   'mongodb/fixtures/',
+    'mongodb/fixtures/',
 )
 
 
@@ -118,5 +127,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
-CORS_ORIGIN_ALLOW_ALL = True

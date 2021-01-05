@@ -1,6 +1,6 @@
 import functools
 from django.http.request import HttpRequest
-from django.http.response import HttpResponse, HttpResponseNotFound
+from django.http.response import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from typing import Callable, List
 from enum import Enum
 
@@ -54,9 +54,9 @@ def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None
                     Validator(metadata).validate()
                     return func(request, **kwargs)
                 except Exception as e:
-                    print(e)
-                    print("NOT VALIDATED")
-
+                    return HttpResponseForbidden(f"Not authorized")
+            else:
+                return func(request, **kwargs)
         return handler
 
     return endpoint_wrapper
