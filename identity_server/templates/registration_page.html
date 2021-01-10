@@ -1,26 +1,10 @@
+{% load static %}
 <head>
+    <link rel="stylesheet"  href="{% static 'css/page.css' %}">
     <title>Create account</title>
 </head>
-<style>
-    .container {
-        display: flex;
-        align-items: center;
-    }
-    #permissions {
-        display: none;
-    }
-    input{
-        display: block;
-        margin: 10px;
-    }
 
-    button {
-        border-radius: 5px;
-        margin: 5px
-    }
-</style>
-
-<div container="content">
+<div container="content" class="form-4">
 
 <h1>Creating an account</h1>
 
@@ -29,13 +13,13 @@
     <div>
         {% for required_field in required_fields %}
             {% if required_field == "password" %}
-                <input name="{{required_field}}" placeholder="{{required_field}}" type="password" autocomplete="off"/>
+                <input  name="{{required_field}}" placeholder="{{required_field}}" type="password" autocomplete="off"/>
             {% else %}
-                <input name="{{required_field}}" placeholder="{{required_field}}" autocomplete="off"/>
+                <input type="text" name="{{required_field}}" placeholder="{{required_field}}" autocomplete="off"/>
             {% endif %}
         {% endfor %}
     </div>
-    <button onclick="onFormSubmit(event)">Create account</button>
+    <input type="submit" onclick="onFormSubmit(event)" value="Create account">
     
 </form>
 
@@ -51,6 +35,7 @@
             if(this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
                 console.log(response);
+                alert('Account succesfully created')
             }
         }
     }       
@@ -59,7 +44,8 @@
         e.preventDefault();
         
         const userInfo = document.getElementById("info");     
-        const data = Object.fromEntries(new FormData(userInfo).entries());        
+        const data = Object.fromEntries(new FormData(userInfo).entries());
+        Object.keys(data).forEach(key => data[key] = data[key].trim());
         sendData(data);
     }
 </script>

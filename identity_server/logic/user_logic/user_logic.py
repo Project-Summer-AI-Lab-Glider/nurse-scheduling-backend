@@ -31,7 +31,6 @@ class User:
                 native_args[name] = val
         return User(**native_args)
 
-
 class UserLogic:
     def __init__(self) -> None:
         super().__init__()

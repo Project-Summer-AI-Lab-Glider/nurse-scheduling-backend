@@ -5,6 +5,7 @@ from typing import List
 
 from mongodb.Worker import Worker
 from mongodb.ApplicationAccount import ApplicationAccount
+from mongodb.Application import Application
 
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
@@ -45,20 +46,20 @@ class InitialLoginState(SessionState):
         assert isinstance(
             self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
         data = self._get_request_data(request)
-        scope = data['scope'].split(",")
         client_id = data['client_id']
+        app = self._get_app(client_id)
+        scope = app.permissions
+        app_name = app.name
         self.session_context.assign(
             {'scope': scope, 'callback_url': data['callback_url'], 'clientId': client_id})
-        app = self._get_app(client_id)
         self.set_session_state(WaitingForPermissions)
-        return self.render_html(request, 'login_page.html', context={'scope': scope, 'app': app, 'clientId': client_id})
+        return self.render_html(request, 'login_page.html', context={'scope': scope, 'app': app_name, 'clientId': client_id})
 
-    def _get_app(self, client_id):
+    def _get_app(self, client_id) -> Application:
         """
         Makes request to the database to get actual application name associated with given client id 
         """
-        # TODO DB
-        return 'App'
+        return Application.objects.filter(client_id=client_id).first()
 
 
 class WaitingForPermissions(SessionState):
@@ -87,8 +88,9 @@ class WaitingForPermissions(SessionState):
             self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
         client_id = self._get_request_data(request)['client_id']
         name = self._get_request_data(request)['name']
+        password = self._get_request_data(request)['password']
         code = self._generate_code()
-        worker = Worker.objects.filter(name=name).last()
+        worker = Worker.objects.filter(name=name, password=password).last()
         if not worker:
             return self.bad_request("Bad username or password")
         self._save_to_database(code, client_id, worker.id,
