@@ -1,7 +1,7 @@
 import functools
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
-from typing import Callable, List
+from typing import Callable, List, Dict
 from enum import Enum
 
 from identity_server.logic.validation_chain.expiration_date_validation_handler import ExpirationDateValidator
@@ -13,10 +13,13 @@ from identity_server.logic.validation_chain.token_validator_handler import Token
 
 class Permissions(Enum):
     CONTACTS_READ = "CONTACTS_READ"
+    ALL_USERS_READ = "ALL_USERS_READ"
+    USER_READ = "USER_READ"
     WORK_SHIFTS_READ = "WORK_SHIFTS_READ" 
     USER_CONTACTS_READ = "USER_CONTACTS_READ"
     USER_SHIFTS_READ = "USER_SHIFTS_READ"
     USER_ADD = "USER_ADD"
+    USER_MOD = "USER_MOD"
     USER_REMOVE = "USER_REMOVE"
 
 
@@ -42,7 +45,7 @@ class Validator:
 
 
 def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None):
-    def endpoint_wrapper(func: Callable[[HttpRequest], HttpResponse]):
+    def endpoint_wrapper(func: Callable[[HttpRequest, Dict[str, any]], HttpResponse]):
         @functools.wraps(func)
         def handler(request: HttpRequest, **kwargs):
             if request.method not in [item.value for item in allowed_methods]:
@@ -56,6 +59,7 @@ def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None
                     Validator(metadata).validate()
                     return func(request, **kwargs)
                 except Exception as e:
+                    print(e)
                     return HttpResponseForbidden(f"Not authorized")
             else:
                 return func(request, **kwargs)

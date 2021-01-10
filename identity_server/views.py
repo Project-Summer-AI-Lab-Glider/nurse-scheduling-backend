@@ -64,32 +64,32 @@ def get_contacts(request):
     return HttpResponse(contacts)
 
 
-@endpoint(HttpMethod.GET)
+@endpoint(HttpMethod.GET, permissions=[Permissions.USER_CONTACTS_READ])
 def get_user_contacts(request: HttpRequest, user_id):
     contacts = UserLogic().get_contact(user_id)
     return HttpResponse(contacts)
 
 
-@endpoint(HttpMethod.GET)
+@endpoint(HttpMethod.GET, permissions=[Permissions.ALL_USERS_READ])
 def get_users(request: HttpRequest):
     users = UserLogic().get_all_users()
     return HttpResponse(users)
 
 
-@endpoint(HttpMethod.GET)
+@endpoint(HttpMethod.GET, permissions=[Permissions.USER_READ, Permissions.USER_CONTACTS_READ])
 def get_user(request: HttpRequest, user_id):
     user = UserLogic().get_user(user_id)
     return HttpResponse(user)
 
 
-@endpoint(HttpMethod.POST)
+@endpoint(HttpMethod.POST, permissions=[Permissions.USER_ADD])
 def create_user(request: HttpRequest):
     user_data = json.loads(request.body)
     UserLogic().create_user(User.from_kwargs(**user_data))
     return HttpResponse(json.dumps('success'))
 
 
-@endpoint(HttpMethod.GET)
+@endpoint(HttpMethod.GET, permissions=[Permissions.USER_SHIFTS_READ])
 def get_workers_shift(request: HttpRequest, user_id):
     fromDate = request.GET.get('from', '')
     toDate = request.GET.get('to', '')
@@ -97,7 +97,7 @@ def get_workers_shift(request: HttpRequest, user_id):
     return HttpResponse(worker_shifts)
 
 
-@endpoint(HttpMethod.POST)
+@endpoint(HttpMethod.POST, permissions=[Permissions.USER_MOD])
 def create_shift(request: HttpRequest, user_id):
     worker_shift = WorkerShift(worker_id=user_id,
                                fromHour=0,
