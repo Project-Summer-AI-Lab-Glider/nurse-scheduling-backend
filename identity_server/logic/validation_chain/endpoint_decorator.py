@@ -12,10 +12,12 @@ from identity_server.logic.validation_chain.token_validator_handler import Token
 
 
 class Permissions(Enum):
-    CONTACTS_READ = "CONTACTS_READ",
-    CONTACTS_WRITE = "CONTACTS_WRITE",
-    USER_READ = "USER_READ",
+    CONTACTS_READ = "CONTACTS_READ"
+    WORK_SHIFTS_READ = "WORK_SHIFTS_READ" 
+    USER_CONTACTS_READ = "USER_CONTACTS_READ"
+    USER_SHIFTS_READ = "USER_SHIFTS_READ"
     USER_ADD = "USER_ADD"
+    USER_REMOVE = "USER_REMOVE"
 
 
 class HttpMethod(Enum):

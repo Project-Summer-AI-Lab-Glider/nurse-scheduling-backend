@@ -13,7 +13,7 @@ from identity_server.logic.session_manager import SessionManager
 from identity_server.logic.token_logic.token_logic import TokenLogic
 from identity_server.logic.user_logic.user_logic import User, UserLogic
 from identity_server.logic.validation_chain.endpoint_decorator import (
-    HttpMethod, endpoint)
+    HttpMethod, Permissions, endpoint)
 
 
 @endpoint(HttpMethod.GET, HttpMethod.POST)
@@ -58,7 +58,7 @@ def introspect_token(request):
     return Http404()
 
 
-@endpoint(HttpMethod.GET)
+@endpoint(HttpMethod.GET, permissions=[Permissions.CONTACTS_READ])
 def get_contacts(request):
     contacts = UserLogic().get_contacts()
     return HttpResponse(contacts)
