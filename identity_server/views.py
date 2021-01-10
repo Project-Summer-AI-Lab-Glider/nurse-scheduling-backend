@@ -70,7 +70,7 @@ def get_user_contacts(request: HttpRequest, user_id):
     return HttpResponse(contacts)
 
 
-@endpoint(HttpMethod.GET, permissions=[Permissions.ALL_USERS_READ])
+@endpoint(HttpMethod.GET, permissions=[Permissions.ALL_USERS_READ, Permissions.CONTACTS_READ])
 def get_users(request: HttpRequest):
     users = UserLogic().get_all_users()
     return HttpResponse(users)
