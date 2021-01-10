@@ -1,40 +1,25 @@
+{% load static %}
 <head>
+    <head>
+        <link rel="stylesheet"  href="{% static 'css/page.css' %}">
+      </head>
     <title>Login</title>
 </head>
-<style>
-    .container {
-        display: flex;
-        align-items: center;
-    }
-    #permissions {
-        display: none;
-    }
-    input{
-        display: block;
-        margin: 10px;
-    }
-    #buttons-container {
-        display: flex;
-    }
-    button {
-        border-radius: 5px;
-        margin: 5px
-    }
-</style>
 
-<div container="content">
+<div container="content" class="form-4" >
 
 <h1>Application {{ app }} asks you for permissions</h1>
 
-<form id="info" onsubmit="event.preventDefault()">
+<form id="info" class="form-1" action="javascript:void(0);" onsubmit="event.preventDefault()">
     {% csrf_token %}
-    <div>
-        <input name="name" placeholder="Name" autocomplete="off"/>
+    <div class="field">
+        <input name="name" type="text" placeholder="Name" autocomplete="off"/>
         <input name="password" type="password" placeholder="Password"/>
         <small>Do not have an account? <a href="/register">Register</a></small>
     </div>
-    
-    <button onclick="onUserData(event)">Next</button>
+    <p class="submit">
+    <input type="submit" onclick="onUserData(event)" value="Next">
+    </p>
     <div id="permissions">
         <ul>
             {% for permission in scope %}
@@ -42,8 +27,8 @@
             {% endfor %}        
         </ul>
         <div id="buttons-container">
-            <button onclick="onFormSubmit(event, true)">Accept</button>
-            <button onclick="onFormSubmit(event, false)">Deny</button>
+            <input type="submit" onclick="onFormSubmit(event, true)" value="Accept">
+            <input type="submit" onclick="onFormSubmit(event, false)" value="Deny">
         </div>
     </div>
     
@@ -73,8 +58,9 @@
 
     function onFormSubmit(e, isAccepted) {
         e.preventDefault();
-        const userInfo = document.getElementById( "info" );     
-        const data = Object.fromEntries(new FormData(userInfo).entries());        
+        const userInfo = document.getElementById( "info" );    
+        const data = Object.fromEntries(new FormData(userInfo).entries());
+        Object.keys(data).forEach(key => data[key] = data[key].trim());
         data.is_accepted = isAccepted;
         data.client_id = "{{clientId}}"
         sendData(data);

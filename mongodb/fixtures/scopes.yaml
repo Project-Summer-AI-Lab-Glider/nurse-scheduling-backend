@@ -1,0 +1,20 @@
+- model: mongodb.Application  
+  pk: 1
+  fields:
+    client_id: 1
+    name: adminpanel
+    permissions: ["CONTACTS_READ", "WORK_SHIFTS_READ", "USER_CONTACTS_READ", "USER_SHIFTS_READ", "USER_ADD", "USER_REMOVE"]
+
+- model: mongodb.Application  
+  pk: 2
+  fields:
+    client_id: 2
+    name: calendar
+    permissions: ["WORK_SHIFTS_READ", "USER_SHIFTS_READ"]
+
+- model: mongodb.Application  
+  pk: 3
+  fields:
+    client_id: 3
+    name: contacts
+    permissions: ["CONTACTS_READ", "USER_CONTACTS_READ"]
