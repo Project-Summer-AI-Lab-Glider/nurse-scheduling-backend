@@ -26,7 +26,7 @@ def register(request: HttpRequest):
     return SessionManager().handle(request, RegistrationSession)
 
 
-@endpoint(HttpMethod.GET)
+@endpoint(HttpMethod.GET, permissions=[])
 def is_authenticated(request: HttpRequest):
     return SessionManager().handle(request, LoginSession)
 

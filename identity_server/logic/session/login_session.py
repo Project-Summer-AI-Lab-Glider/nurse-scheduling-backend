@@ -74,13 +74,17 @@ class WaitingForPermissions(SessionState):
             'client_id'
         ]
 
+
     def _get_request_data(self, request: HttpRequest) -> dict:
         if request.body:
             return json.loads(request.body)
 
-    def unprocessable_entity(self, reason: str):
-        self.set_session_state(InitialLoginState)
-        return super().unprocessable_entity(reason)
+    def unprocessable_entity(self, reason: str, request: str):
+        assert isinstance(
+            self.session_context,
+            LoginSessionContext), f"Expected context to be {LoginSessionContext.name}, but actual is {type(self.session_context).name}"
+        scope, app, client_id = self.session_context.scope, 'APP', self.session_context.client_id
+        return self.render_html(request, 'login_page.html', context={'scope': scope, 'app': app, 'clientId': client_id})
 
     def process_request(self, request: HttpRequest) -> HttpResponse:
         assert isinstance(

@@ -9,7 +9,7 @@ class TokenLogic:
 
     def create_token(self, code):
         user_id = "ADMIN"           # TODO DB request to DB, based on code
-        permissions = ["777"]         # TODO DB srequest to DB
+        permissions = ["CONTACTS_READ"]         # TODO DB srequest to DB
         self._token_builder.init(user_id=user_id, permissions=permissions)
         return self._token_builder.generate_token()
 

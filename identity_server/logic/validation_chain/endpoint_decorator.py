@@ -7,20 +7,9 @@ from enum import Enum
 from identity_server.logic.validation_chain.expiration_date_validation_handler import ExpirationDateValidator
 from identity_server.logic.validation_chain.header_validation_handler import HeaderValidator
 from identity_server.logic.validation_chain.permission_validation_handler import PermissionValidator
+from identity_server.logic.validation_chain.permissions import Permissions
 from identity_server.logic.validation_chain.signature_validation_handler import SignatureValidator
 from identity_server.logic.validation_chain.token_validator_handler import TokenValidator
-
-
-class Permissions(Enum):
-    CONTACTS_READ = "CONTACTS_READ"
-    ALL_USERS_READ = "ALL_USERS_READ"
-    USER_READ = "USER_READ"
-    WORK_SHIFTS_READ = "WORK_SHIFTS_READ" 
-    USER_CONTACTS_READ = "USER_CONTACTS_READ"
-    USER_SHIFTS_READ = "USER_SHIFTS_READ"
-    USER_ADD = "USER_ADD"
-    USER_MOD = "USER_MOD"
-    USER_REMOVE = "USER_REMOVE"
 
 
 class HttpMethod(Enum):
@@ -52,7 +41,17 @@ def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None
                 return HttpResponseNotFound(f"<h1>Method {request.method} {request.path} does not exists</h1>")
             if permissions is not None:
                 metadata = {}
-                method, token = request.META['Authorization'].split(' ')
+                print(request)
+                try:
+                    method, token = request.META['HTTP_AUTHORIZATION'].split(' ')
+                except Exception as e:
+                    print(e)
+                    try:
+                        method = request.META['HTTP_AUTHORIZATION']
+                    except Exception as e:
+                        print(e)
+
+                    token = ''
                 metadata.update({'method': method, 'token': token,
                                  'excepted_permissions': permissions})
                 try:
