@@ -22,14 +22,15 @@ class SessionManager(metaclass=Singleton):
     session_id_cookie = 'session'
 
     def handle(self, request: HttpRequest, session_type: type):
+        cookie_name = f'{self.session_id_cookie}_{session_type.__name__}'
         session_id = request.COOKIES.setdefault(
-            self.session_id_cookie, self._create_session_id())
+            cookie_name, self._create_session_id())
 
         session = self._get_session(session_id, session_type)
         result = session.handle(request)
         if session.is_finished:
             self._end_session(session_id)
-        result.set_cookie(self.session_id_cookie,
+        result.set_cookie(cookie_name,
                           session_id, max_age=60*60*24*5, secure=False, samesite=False)
         return result
 

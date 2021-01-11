@@ -2,6 +2,7 @@ import base64
 import hmac
 import json
 import time
+from typing import List
 
 
 class TokenBuilder:
@@ -16,7 +17,7 @@ class TokenBuilder:
         self.seconds_to_expire = 1800
         self.initialized = False
 
-    def init(self, permissions: [str], user_id: str) -> None:
+    def init(self, permissions: List[str], user_id: str) -> None:
         self._add_permissions(permissions)
         self._add_user_id(user_id)
         self._generate_payload()
@@ -26,7 +27,7 @@ class TokenBuilder:
     def _base64_encode(statement: bytes) -> str:
         return base64.urlsafe_b64encode(statement).decode().strip('=')
 
-    def _add_permissions(self, permissions: str) -> None:
+    def _add_permissions(self, permissions: List[str]) -> None:
         self.permissions.extend(permissions)
 
     def _add_user_id(self, user_id: str) -> None:
