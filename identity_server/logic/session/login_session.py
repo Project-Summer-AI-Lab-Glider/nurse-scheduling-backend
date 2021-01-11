@@ -43,7 +43,6 @@ class InitialLoginState(SessionState):
     @property
     def required_request_params(self):
         return [
-            'scope',
             'callback_url',
             'client_id'
         ]

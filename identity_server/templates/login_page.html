@@ -24,7 +24,7 @@
             <input name="password" class="form__group field" type="password" placeholder="Password"/>
             <label for="name" class="form__label">Password</label>
 
-            <small>Do not have an account? <button onclick="register()">Register</button></small>       
+            <small>Do not have an account? <input type="submit" onclick="register()" value="Register"></small>
         </div>
         <div id="permissions">
             <ul>
@@ -52,6 +52,9 @@
             if(this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
                 window.location.replace(response.callback_url)
+            }
+            else if(this.response === "Bad username or password"){
+                alert(this.response)
             }
         }
     }
