@@ -1,55 +1,62 @@
 {% load static %}
 <head>
     <head>
-        <link rel="stylesheet"  href="{% static 'css/page.css' %}">
-      </head>
+        <link rel="stylesheet" href="{% static 'css/page.scss' %}">
+    </head>
     <title>Login</title>
 </head>
 
-<div container="content" class="form-4" >
+<body>
+<div class="appName">
+    <h1>Application {{ app }} asks you for permissions</h1>
+</div>
 
-<h1>Application {{ app }} asks you for permissions</h1>
+<div container="content" class="form-4">
 
-<form id="info" class="form-1" action="javascript:void(0);" onsubmit="event.preventDefault()">
-    {% csrf_token %}
-    <div class="field">
-        <input name="name" type="text" placeholder="Name" autocomplete="off"/>
-        <input name="password" type="password" placeholder="Password"/>
-        <small>Do not have an account? <a href="/register">Register</a></small>
-    </div>
-    <p class="submit">
-    <input type="submit" onclick="onUserData(event)" value="Next">
-    </p>
-    <div id="permissions">
-        <ul>
-            {% for permission in scope %}
-            <li>{{ permission }}</li>
-            {% endfor %}        
-        </ul>
-        <div id="buttons-container">
-            <input type="submit" onclick="onFormSubmit(event, true)" value="Accept">
-            <input type="submit" onclick="onFormSubmit(event, false)" value="Deny">
+
+    <form id="info" class="form-1" action="javascript:void(0);" onsubmit="event.preventDefault()">
+        {% csrf_token %}
+
+        <div class="form__group field">
+            <input name="name" class="form__group field" type="text" placeholder="Name" autocomplete="off"/>
+            <label for="name" class="form__label">Name</label>
         </div>
-    </div>
-    
-</form>
+        <div class="form__group field">
+            <input name="password" class="form__group field" type="password" placeholder="Password"/>
+            <label for="name" class="form__label">Password</label>
+
+            <small>Do not have an account? <a href="/register">Register</a></small>
+        </div>
+        <div id="permissions">
+            <ul>
+                {% for permission in scope %}
+                    <li>{{ permission }}</li>
+                {% endfor %}
+            </ul>
+            <div class="buttons-container">
+                <input type="submit" onclick="onFormSubmit(event, true)" value="Accept">
+                <input type="submit" onclick="onFormSubmit(event, false)" value="Deny">
+            </div>
+        </div>
+
+    </form>
 
 </div>
 
 </body>
-<script>    
+<script>
     function sendData(data) {
         const XHR = new XMLHttpRequest();
-        XHR.open( "POST", "login" );
+        XHR.open("POST", "login");
         XHR.send(JSON.stringify(data));
-        XHR.onreadystatechange = function() {
-            if(this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+        XHR.onreadystatechange = function () {
+            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
                 window.location.replace(response.callback_url)
             }
         }
-    }       
-    
+    }
+
     function onUserData(e) {
         e.preventDefault();
         var permissions_block = document.getElementById("permissions");
@@ -58,7 +65,7 @@
 
     function onFormSubmit(e, isAccepted) {
         e.preventDefault();
-        const userInfo = document.getElementById( "info" );    
+        const userInfo = document.getElementById("info");
         const data = Object.fromEntries(new FormData(userInfo).entries());
         Object.keys(data).forEach(key => data[key] = data[key].trim());
         data.is_accepted = isAccepted;

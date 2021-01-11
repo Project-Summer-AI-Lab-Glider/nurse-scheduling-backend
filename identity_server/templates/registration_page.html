@@ -1,49 +1,58 @@
 {% load static %}
 <head>
-    <link rel="stylesheet"  href="{% static 'css/page.css' %}">
+    <link rel="stylesheet" href="{% static 'css/page.scss' %}">
     <title>Create account</title>
 </head>
 
+<body>
+<div class="appName">
+    <h1>Creating an account</h1></div>
 <div container="content" class="form-4">
 
-<h1>Creating an account</h1>
 
-<form id="info" onsubmit="event.preventDefault()">
-    {% csrf_token %}
-    <div>
-        {% for required_field in required_fields %}
-            {% if required_field == "password" %}
-                <input  name="{{required_field}}" placeholder="{{required_field}}" type="password" autocomplete="off"/>
-            {% else %}
-                <input type="text" name="{{required_field}}" placeholder="{{required_field}}" autocomplete="off"/>
-            {% endif %}
-        {% endfor %}
-    </div>
-    <input type="submit" onclick="onFormSubmit(event)" value="Create account">
-    
-</form>
+    <form id="info" onsubmit="event.preventDefault()">
+        {% csrf_token %}
+        <div class="allFields">
+            {% for required_field in required_fields %}
+                <div class="form__group field">
+                    {% if required_field == "password" %}
+                        <input name="{{ required_field }}" placeholder="{{ required_field }}" type="password"
+                               autocomplete="off"/>
+
+                    {% else %}
+                        <input type="text" name="{{ required_field }}" placeholder="{{ required_field }}"
+                               autocomplete="off"/>
+                    {% endif %}
+                    <label for="name" class="form__label">{{ required_field }}</label>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="buttons-container"><input type="submit" onclick="onFormSubmit(event)" value="Create account"></div>
+
+
+    </form>
 
 </div>
 
 </body>
-<script>    
+<script>
     function sendData(data) {
         const XHR = new XMLHttpRequest();
-        XHR.open( "POST", "register" );
+        XHR.open("POST", "register");
         XHR.send(JSON.stringify(data));
-        XHR.onreadystatechange = function() {
-            if(this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+        XHR.onreadystatechange = function () {
+            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
                 console.log(response);
                 alert('Account succesfully created')
             }
         }
-    }       
-    
+    }
+
     function onFormSubmit(e) {
         e.preventDefault();
-        
-        const userInfo = document.getElementById("info");     
+
+        const userInfo = document.getElementById("info");
         const data = Object.fromEntries(new FormData(userInfo).entries());
         Object.keys(data).forEach(key => data[key] = data[key].trim());
         sendData(data);
