@@ -121,6 +121,7 @@ class LoggedIn(SessionState):
         assert isinstance(
             self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
         user_id, client_id, callback_url = self.session_context.user_id, self.session_context.client_id, self.session_context.callback_url
+
         refresh_token = TokenLogic().create_refresh_token(user_id, client_id)
 
         scope = {'redirect': f'{callback_url}?code={refresh_token}'}
