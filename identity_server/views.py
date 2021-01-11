@@ -54,7 +54,7 @@ def revoke_token(request: HttpRequest):
     return HttpResponse(json.dumps({'is_success': True}))
 
 
-@endpoint(HttpMethod.GET)
+@endpoint(HttpMethod.GET, permissions=[])
 def introspect_token(request):
     # TODO decode token and check it return type
     return Http404()
