@@ -18,7 +18,7 @@ urlpatterns = [
     # GET
     path('contacts/<int:user_id>', views.get_user_contacts),
     # GET
-    path('users/<int:user_id>', views.get_user),
+    path('user', views.get_user),
     # GET
     path('users', views.get_users),
     # POST

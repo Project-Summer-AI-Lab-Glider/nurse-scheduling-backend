@@ -1,9 +1,8 @@
 {% load static %}
+
 <head>
-    <head>
-        <link rel="stylesheet" href="{% static 'css/page.scss' %}">
-    </head>
     <title>Login</title>
+    <link rel="stylesheet"  href="{% static 'css/page.scss' %}">
 </head>
 
 <body>
@@ -25,7 +24,7 @@
             <input name="password" class="form__group field" type="password" placeholder="Password"/>
             <label for="name" class="form__label">Password</label>
 
-            <small>Do not have an account? <a href="/register">Register</a></small>
+            <small>Do not have an account? <button onclick="register()">Register</button></small>       
         </div>
         <div id="permissions">
             <ul>
@@ -44,17 +43,21 @@
 </div>
 
 </body>
-<script>
+<script>    
     function sendData(data) {
         const XHR = new XMLHttpRequest();
-        XHR.open("POST", "login");
+        XHR.open( "POST", "login" );
         XHR.send(JSON.stringify(data));
-        XHR.onreadystatechange = function () {
-            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+        XHR.onreadystatechange = function() {
+            if(this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
                 window.location.replace(response.callback_url)
             }
         }
+    }
+
+    function register(){
+        window.location.replace(window.location.href.replace('login', 'register'))
     }
 
     function onUserData(e) {
@@ -67,7 +70,6 @@
         e.preventDefault();
         const userInfo = document.getElementById("info");
         const data = Object.fromEntries(new FormData(userInfo).entries());
-        Object.keys(data).forEach(key => data[key] = data[key].trim());
         data.is_accepted = isAccepted;
         data.client_id = "{{clientId}}"
         sendData(data);

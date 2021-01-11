@@ -11,13 +11,18 @@ from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from identity_server.logic.session.session import (Session, SessionContext,
                                                    SessionState)
+from identity_server.logic.token_logic.token_logic import TokenLogic
+from mongodb.ApplicationAccount import ApplicationAccount
+from mongodb.Worker import Worker
 
 
 @dataclass
 class LoginSessionContext(SessionContext):
+    app: str = ''
     scope: List[str] = field(default_factory=list)
     callback_url: str = ''
     client_id: str = ''
+    user_id: str = ''
 
 
 class LoginSession(Session):
@@ -31,9 +36,10 @@ class LoginSession(Session):
 
 class InitialLoginState(SessionState):
     """
-    Session was not started. 
+    Session was not started.
     Checks is request is valid, returns login page in case if yes and bad request otherwise.
     """
+
     @property
     def required_request_params(self):
         return [
@@ -44,30 +50,33 @@ class InitialLoginState(SessionState):
 
     def process_request(self, request: HttpRequest) -> HttpResponse:
         assert isinstance(
-            self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
+            self.session_context,
+            LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
         data = self._get_request_data(request)
         client_id = data['client_id']
         app = self._get_app(client_id)
         scope = app.permissions
         app_name = app.name
         self.session_context.assign(
-            {'scope': scope, 'callback_url': data['callback_url'], 'clientId': client_id})
+            {'scope': scope, 'callback_url': data['callback_url'], 'client_id': client_id, 'app': app})
+
         self.set_session_state(WaitingForPermissions)
         return self.render_html(request, 'login_page.html', context={'scope': scope, 'app': app_name, 'clientId': client_id})
 
     def _get_app(self, client_id) -> Application:
         """
-        Makes request to the database to get actual application name associated with given client id 
+        Makes request to the database to get actual application name associated with given client id
         """
         return Application.objects.filter(client_id=client_id).first()
 
 
 class WaitingForPermissions(SessionState):
     """
-    Session is waiting for user credentials and premissions. 
+    Session is waiting for user credentials and premissions.
     In case of success - returns code
-    In case of failure - returns 403 
+    In case of failure - returns 403
     """
+
     @property
     def required_request_params(self):
         return [
@@ -79,32 +88,49 @@ class WaitingForPermissions(SessionState):
         if request.body:
             return json.loads(request.body)
 
-    def unprocessable_entity(self, reason: str):
-        self.set_session_state(InitialLoginState)
-        return super().unprocessable_entity(reason)
+    def unprocessable_entity(self, reason: str, request: HttpRequest):
+        assert isinstance(
+            self.session_context,
+            LoginSessionContext), f"Expected context to be {LoginSessionContext.name}, but actual is {type(self.session_context).name}"
+        scope, app, client_id = self.session_context.scope, self.session_context.app, self.session_context.client_id
+        return self.render_html(request, 'login_page.html', context={'scope': scope, 'app': app, 'clientId': client_id})
 
     def process_request(self, request: HttpRequest) -> HttpResponse:
         assert isinstance(
-            self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
+            self.session_context,
+            LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
         client_id = self._get_request_data(request)['client_id']
         name = self._get_request_data(request)['name']
         password = self._get_request_data(request)['password']
-        code = self._generate_code()
-        worker = Worker.objects.filter(name=name, password=password).last()
-        if not worker:
+        worker = Worker.objects.filter(name=name).last()
+        if not worker or worker.password != password:
             return self.bad_request("Bad username or password")
-        self._save_to_database(code, client_id, worker.id,
+
+        self.session_context.user_id = worker.id
+        refresh_token = self._generate_code(worker.id, client_id)
+        self._save_to_database(refresh_token, client_id, worker.id,
                                self.session_context.scope)
         self.set_session_state(LoggedIn)
-        return self.ok(json.dumps({'callback_url': f'{self.session_context.callback_url}?code={code}'}))
 
-    def _generate_code(self):
-        # TODO DB
-        return 'CODE'
+        return self.ok(json.dumps({'callback_url': f'{self.session_context.callback_url}?code={refresh_token}'}))
+
+    def _generate_code(self, user_id, client_id):
+        return TokenLogic().create_refresh_token(user_id, client_id)
 
     def _save_to_database(self, code, client_id, worker_id, scope):
-        # TODO DB DONE
         ApplicationAccount.objects.create(client_id=client_id, worker_id=worker_id,
                                           permissions=scope)
         print(
             f'Saving {client_id} associated with code: {code} and scope: {scope} to database')
+
+
+class LoggedIn(SessionState):
+    def process_request(self, request):
+        assert isinstance(
+            self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
+        user_id, client_id, callback_url = self.session_context.user_id, self.session_context.client_id, self.session_context.callback_url
+
+        refresh_token = TokenLogic().create_refresh_token(user_id, client_id)
+
+        scope = {'redirect': f'{callback_url}?code={refresh_token}'}
+        return self.render_html(request, 'redirect.html', scope)

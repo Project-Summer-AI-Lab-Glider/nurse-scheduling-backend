@@ -27,7 +27,7 @@ class SessionState(ABC):
     def handle(self, request: HttpRequest) -> HttpResponse:
         request_errors = self._validate_request_body(request)
         if request_errors:
-            return self.unprocessable_entity(request_errors)
+            return self.unprocessable_entity(request_errors, request)
         return self.process_request(request)
 
     def _validate_request_body(self, request: HttpRequest):
@@ -57,8 +57,8 @@ class SessionState(ABC):
         Processes request and returns expected value
         """
 
-    def unprocessable_entity(self, reason: str):
-        self.end_session()
+    def unprocessable_entity(self, reason: str, request: HttpRequest):
+        # self.end_session()
         return HttpResponse(status=422, content_type='text/html', content=f'<h1>{reason}</h1>')
 
     def render_html(self, request: HttpRequest, template, context):

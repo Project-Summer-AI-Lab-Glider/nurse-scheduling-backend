@@ -31,6 +31,7 @@ class User:
                 native_args[name] = val
         return User(**native_args)
 
+
 class UserLogic:
     def __init__(self) -> None:
         super().__init__()
@@ -57,8 +58,9 @@ class UserLogic:
 
     def get_user(self, user_id):
         worker = Worker.objects.get(id=user_id)
-        worker_json = self._serialize_object(worker)
-        return json.dumps(worker_json[0])
+        worker_json = self._serialize_object(worker)[0]
+        worker_json.pop('password', None)
+        return json.dumps(worker_json)
 
     def create_user(self, user: User):
         worker = Worker.objects.create(**asdict(user))

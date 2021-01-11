@@ -1,3 +1,4 @@
+from identity_server.logic.token_logic.token_logic import TokenLogic
 import json
 from identity_server.logic.session.session import SessionState
 from django.http.response import HttpResponse, HttpResponseForbidden

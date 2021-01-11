@@ -23,3 +23,6 @@ class WaitingForRegistrationData(SessionState):
         UserLogic().create_user(new_user)
         self.end_session()
         return self.ok(json.dumps(asdict(new_user)))
+
+    def unprocessable_entity(self, reason: str, request: HttpRequest):
+        return self.render_html(request, 'registration_page.html', {'required_fields': User.required_fields()})

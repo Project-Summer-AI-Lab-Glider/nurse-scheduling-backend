@@ -4,6 +4,7 @@
     <title>Create account</title>
 </head>
 
+
 <body>
 <div class="appName">
     <h1>Creating an account</h1></div>
@@ -43,8 +44,11 @@
         XHR.onreadystatechange = function () {
             if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
-                console.log(response);
+
                 alert('Account succesfully created')
+
+                window.location.replace(window.location.href.replace('register', 'login'))
+
             }
         }
     }
@@ -54,7 +58,13 @@
 
         const userInfo = document.getElementById("info");
         const data = Object.fromEntries(new FormData(userInfo).entries());
-        Object.keys(data).forEach(key => data[key] = data[key].trim());
-        sendData(data);
+
+
+
+        if (Object.values(data).every(field => field !== "")) {
+            Object.keys(data).forEach(key => data[key] = data[key].trim());
+            sendData(data);
+        }
+
     }
 </script>
