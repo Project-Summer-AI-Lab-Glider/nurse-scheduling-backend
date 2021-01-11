@@ -1,7 +1,7 @@
 import functools
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
-from typing import Callable, List
+from typing import Callable, Dict, List
 from enum import Enum
 
 from identity_server.logic.validation_chain.expiration_date_validation_handler import ExpirationDateValidator
@@ -13,7 +13,7 @@ from identity_server.logic.validation_chain.token_validator_handler import Token
 
 class Permissions(Enum):
     CONTACTS_READ = "CONTACTS_READ"
-    WORK_SHIFTS_READ = "WORK_SHIFTS_READ" 
+    WORK_SHIFTS_READ = "WORK_SHIFTS_READ"
     USER_CONTACTS_READ = "USER_CONTACTS_READ"
     USER_SHIFTS_READ = "USER_SHIFTS_READ"
     USER_ADD = "USER_ADD"
@@ -30,7 +30,7 @@ class HttpMethod(Enum):
 
 
 class Validator:
-    def __init__(self, metadata: {}):
+    def __init__(self, metadata: Dict[str, str]):
         self.validation_chain = [TokenValidator(), SignatureValidator(), HeaderValidator(), PermissionValidator(),
                                  ExpirationDateValidator()]
         self.request = metadata
@@ -49,7 +49,7 @@ def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None
                 return HttpResponseNotFound(f"<h1>Method {request.method} {request.path} does not exists</h1>")
             if permissions is not None:
                 metadata = {}
-                method, token = request.META['Authorization'].split(' ')
+                method, token = request.META['AUTHORIZATION'].split(' ')
                 metadata.update({'method': method, 'token': token,
                                  'excepted_permissions': permissions})
                 try:

@@ -1,6 +1,7 @@
 
 import binascii
 import base64
+from identity_server.logic import session
 from identity_server.logic.session.session import Session
 from identity_server.logic.session.invalid_session import InvalidSession
 from django.http.request import HttpRequest
@@ -20,6 +21,12 @@ class Singleton(type):
 class SessionManager(metaclass=Singleton):
     _sessions = {}
     session_id_cookie = 'session'
+
+    def end_session(self, request: HttpRequest, session_type: type):
+        cookie_name = f'{self.session_id_cookie}_{session_type.__name__}'
+        session_id = request.COOKIES[cookie_name]
+        if session_id:
+            self._end_session(session_id)
 
     def handle(self, request: HttpRequest, session_type: type):
         session_id = request.COOKIES.setdefault(
@@ -45,4 +52,5 @@ class SessionManager(metaclass=Singleton):
         return self._sessions[session_id]
 
     def _end_session(self, session_id):
-        del self._sessions[session_id]
+        if session_id in self._sessions:
+            del self._sessions[session_id]

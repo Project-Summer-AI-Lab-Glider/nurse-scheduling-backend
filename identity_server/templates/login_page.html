@@ -61,7 +61,7 @@
             if(this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
                 window.location.replace(response.callback_url)
-            }
+            } 
         }
     }       
     
