@@ -54,7 +54,7 @@
         XHR.onreadystatechange = function () {
             if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
-                console.log(response);
+                window.location.replace(window.location.href.replace('register', 'login'))
             }
         }
     }
@@ -64,7 +64,8 @@
 
         const userInfo = document.getElementById("info");
         const data = Object.fromEntries(new FormData(userInfo).entries());
-        sendData(data);
-        window.location.replace(window.location.href.replace('register', 'login'))
+        if (Object.values(data).every(field => field !== "")) {
+            sendData(data);
+        }
     }
 </script>

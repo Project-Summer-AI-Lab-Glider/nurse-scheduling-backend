@@ -69,9 +69,6 @@
                 const response = JSON.parse(this.response)
                 window.location.replace(response.callback_url)
             }
-            if (this.readyState === XMLHttpRequest.DONE && this.status === 403) {
-                console.log(" test ")
-            }
         }
     }
 

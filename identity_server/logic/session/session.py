@@ -57,8 +57,8 @@ class SessionState(ABC):
         Processes request and returns expected value
         """
 
-    def unprocessable_entity(self, reason: str, request: str):
-        self.end_session()
+    def unprocessable_entity(self, reason: str, request: HttpRequest):
+        # self.end_session()
         return HttpResponse(status=422, content_type='text/html', content=f'<h1>{reason}</h1>')
 
     def render_html(self, request: HttpRequest, template, context):

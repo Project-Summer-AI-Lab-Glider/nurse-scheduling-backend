@@ -14,6 +14,7 @@ from identity_server.logic.session.session import (Session, SessionContext,
 
 @dataclass
 class LoginSessionContext(SessionContext):
+    app: str = ''
     scope: List[str] = field(default_factory=list)
     callback_url: str = ''
     client_id: str = ''
@@ -30,9 +31,10 @@ class LoginSession(Session):
 
 class InitialLoginState(SessionState):
     """
-    Session was not started. 
+    Session was not started.
     Checks is request is valid, returns login page in case if yes and bad request otherwise.
     """
+
     @property
     def required_request_params(self):
         return [
@@ -43,19 +45,20 @@ class InitialLoginState(SessionState):
 
     def process_request(self, request: HttpRequest) -> HttpResponse:
         assert isinstance(
-            self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
+            self.session_context,
+            LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
         data = self._get_request_data(request)
-        scope = data['scope'].split(",")
         client_id = data['client_id']
-        self.session_context.assign(
-            {'scope': scope, 'callback_url': data['callback_url'], 'clientId': client_id})
+        scope = data['scope'].split(",")
         app = self._get_app(client_id)
+        self.session_context.assign(
+            {'scope': scope, 'callback_url': data['callback_url'], 'clientId': client_id, 'app': app})
         self.set_session_state(WaitingForPermissions)
         return self.render_html(request, 'login_page.html', context={'scope': scope, 'app': app, 'clientId': client_id})
 
     def _get_app(self, client_id):
         """
-        Makes request to the database to get actual application name associated with given client id 
+        Makes request to the database to get actual application name associated with given client id
         """
         # TODO DB
         return 'App'
@@ -63,10 +66,11 @@ class InitialLoginState(SessionState):
 
 class WaitingForPermissions(SessionState):
     """
-    Session is waiting for user credentials and premissions. 
+    Session is waiting for user credentials and premissions.
     In case of success - returns code
-    In case of failure - returns 403 
+    In case of failure - returns 403
     """
+
     @property
     def required_request_params(self):
         return [
@@ -74,21 +78,21 @@ class WaitingForPermissions(SessionState):
             'client_id'
         ]
 
-
     def _get_request_data(self, request: HttpRequest) -> dict:
         if request.body:
             return json.loads(request.body)
 
-    def unprocessable_entity(self, reason: str, request: str):
+    def unprocessable_entity(self, reason: str, request: HttpRequest):
         assert isinstance(
             self.session_context,
             LoginSessionContext), f"Expected context to be {LoginSessionContext.name}, but actual is {type(self.session_context).name}"
-        scope, app, client_id = self.session_context.scope, 'APP', self.session_context.client_id
+        scope, app, client_id = self.session_context.scope, self.session_context.app, self.session_context.client_id
         return self.render_html(request, 'login_page.html', context={'scope': scope, 'app': app, 'clientId': client_id})
 
     def process_request(self, request: HttpRequest) -> HttpResponse:
         assert isinstance(
-            self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
+            self.session_context,
+            LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
         client_id = self._get_request_data(request)['client_id']
         name = self._get_request_data(request)['name']
         code = self._generate_code()
