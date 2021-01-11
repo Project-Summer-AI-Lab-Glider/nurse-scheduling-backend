@@ -1,9 +1,8 @@
 import json
 
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse
 from django.http.request import HttpRequest
-from django.http.response import Http404, HttpResponseForbidden
-from mongodb.Worker import Worker
+from django.http.response import Http404
 from mongodb.WorkerShift import WorkerShift
 
 from identity_server.logic.session.login_session import LoginSession
@@ -28,37 +27,40 @@ def register(request: HttpRequest):
 
 @endpoint(HttpMethod.GET, permissions=[])
 def is_authenticated(request: HttpRequest):
+    # TODO get params from body and check if user is authenticated
     return SessionManager().handle(request, LoginSession)
 
 
 @endpoint(HttpMethod.GET)
 def create_token(request: HttpRequest):
-    code = request.GET['code']  # code that was previously given to app
-    encoded_token = TokenLogic().create_token(code)
-    return HttpResponse(json.dumps({'token': encoded_token}))
-
-
-@endpoint(HttpMethod.POST)
-def refresh_token(request):
-    refreshed_token = TokenLogic().refresh_token()
-    return HttpResponse(refreshed_token)
+    refresh_token = request.GET['code']
+    access_token, token_type, seconds_to_expire, rotated_refresh_token = TokenLogic(
+    ).create_tokens(refresh_token)
+    return HttpResponse(json.dumps({
+        'access_token': access_token,
+        'refresh_token': rotated_refresh_token,
+        'token_type': token_type.value,
+        'expires': seconds_to_expire
+    }))
 
 
 @endpoint(HttpMethod.POST, HttpMethod.DELETE)
-def revoke_token(request):
-    is_accepted, token = TokenLogic().revoke_token()
-    if is_accepted:
-        return HttpResponse(token)
-    else:
-        return HttpResponseForbidden()
+def revoke_token(request: HttpRequest):
+    # TODO check user credentials
+    request = json.loads(request.body())
+    client_id, user_id = request['client_id'], request['user_id']
+    TokenLogic().revoke_token(client_id, user_id)
+    SessionManager().end_session(request, LoginSession)
+    return HttpResponse(json.dumps({'is_success': True}))
 
 
-@endpoint(HttpMethod.GET)
+@endpoint(HttpMethod.GET, permissions=[])
 def introspect_token(request):
+    # TODO decode token and check it return type
     return Http404()
 
 
-@endpoint(HttpMethod.GET, permissions=[Permissions.CONTACTS_READ])
+@endpoint(HttpMethod.GET)
 def get_contacts(request):
     contacts = UserLogic().get_contacts()
     return HttpResponse(contacts)

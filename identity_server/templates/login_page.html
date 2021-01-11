@@ -36,8 +36,6 @@
         <div>
             <input name="name" placeholder="Name" autocomplete="off"/>
             <input name="password" type="password" placeholder="Password"/>
-
-            <small>Do not have an account? <a href="/register">Register</a></small>
             <small>Do not have an account? <button onclick="register()">Register</button></small>
         </div>
 
@@ -68,7 +66,7 @@
             if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
                 window.location.replace(response.callback_url)
-            }
+            } 
         }
     }
 
