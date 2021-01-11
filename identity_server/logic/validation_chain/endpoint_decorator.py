@@ -1,23 +1,15 @@
+from identity_server.logic.validation_chain.token_validator_handler import TokenValidator
+from identity_server.logic.validation_chain.signature_validation_handler import SignatureValidator
+from identity_server.logic.validation_chain.permissions import Permissions
+from identity_server.logic.validation_chain.permission_validation_handler import PermissionValidator
+from identity_server.logic.validation_chain.header_validation_handler import HeaderValidator
+from identity_server.logic.validation_chain.expiration_date_validation_handler import ExpirationDateValidator
+from enum import Enum
+from typing import Callable, List, Dict
+from typing import Callable, Dict, List
 import functools
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
-from typing import Callable, Dict, List
-from enum import Enum
-
-from identity_server.logic.validation_chain.expiration_date_validation_handler import ExpirationDateValidator
-from identity_server.logic.validation_chain.header_validation_handler import HeaderValidator
-from identity_server.logic.validation_chain.permission_validation_handler import PermissionValidator
-from identity_server.logic.validation_chain.signature_validation_handler import SignatureValidator
-from identity_server.logic.validation_chain.token_validator_handler import TokenValidator
-
-
-class Permissions(Enum):
-    CONTACTS_READ = "CONTACTS_READ"
-    WORK_SHIFTS_READ = "WORK_SHIFTS_READ"
-    USER_CONTACTS_READ = "USER_CONTACTS_READ"
-    USER_SHIFTS_READ = "USER_SHIFTS_READ"
-    USER_ADD = "USER_ADD"
-    USER_REMOVE = "USER_REMOVE"
 
 
 class HttpMethod(Enum):
@@ -42,34 +34,32 @@ class Validator:
 
 
 def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None):
-    def endpoint_wrapper(func: Callable[[HttpRequest], HttpResponse]):
+    def endpoint_wrapper(func: Callable[[HttpRequest, Dict[str, any]], HttpResponse]):
         @functools.wraps(func)
         def handler(request: HttpRequest, **kwargs):
             if request.method not in [item.value for item in allowed_methods]:
                 return HttpResponseNotFound(f"<h1>Method {request.method} {request.path} does not exists</h1>")
             if permissions is not None:
                 metadata = {}
-                method, token = request.META['AUTHORIZATION'].split(' ')
+                authorization_key = 'HTTP_AUTHORIZATION'
+                try:
+                    method, token = request.META['HTTP_AUTHORIZATION'].split(
+                        ' ')
+                except Exception as e:
+                    if authorization_key in request.META:
+                        method = request.META['HTTP_AUTHORIZATION']
+                    token = ''
+
                 metadata.update({'method': method, 'token': token,
                                  'excepted_permissions': permissions})
                 try:
                     Validator(metadata).validate()
                     return func(request, **kwargs)
                 except Exception as e:
+                    print(e)
                     return HttpResponseForbidden(f"Not authorized")
             else:
                 return func(request, **kwargs)
         return handler
 
     return endpoint_wrapper
-
-# TODO REMOVE
-# metadata = {}
-# permissions = ['RWX']
-# token = 'eyJ0eXAiOiAiSldUIiwgImFsZyI6ICJIUzI1NiJ9.eyJ1c2VySWQiOiAidXNlciIsICJwZXJtaXNzaW9ucyI6IFsiUldYIl0sICJleHAiOiAxNjA5NzkyMjczLjE1MDA0MX0.F9Xs4q0qutFioOLrr3yLOlaxSCLOcEBZhDZcFcs5vGU'
-# metadata.update({'token': token, 'excepted_permissions': permissions})
-# try:
-#     Validator(metadata).validate()
-# except Exception as e:
-#     print(e)
-#     print("NOT VALIDATED")

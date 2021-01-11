@@ -1,70 +1,81 @@
 <head>
     <title>Login</title>
-</head>
-<style>
-    .container {
-        display: flex;
-        align-items: center;
-    }
-    #permissions {
-        display: none;
-    }
-    input{
-        display: block;
-        margin: 10px;
-    }
-    #buttons-container {
-        display: flex;
-    }
-    button {
-        border-radius: 5px;
-        margin: 5px
-    }
-</style>
+    <style>
+        .container {
+            display: flex;
+            align-items: center;
+        }
 
+        #permissions {
+            display: none;
+        }
+
+        input {
+            display: block;
+            margin: 10px;
+        }
+
+        #buttons-container {
+            display: flex;
+        }
+
+        button {
+            border-radius: 5px;
+            margin: 5px
+        }
+    </style>
+</head>
+
+<body>
 <div container="content">
 
-<h1>Application {{ app }} asks you for permissions</h1>
+    <h1>Application {{ app }} asks you for permissions</h1>
 
-<form id="info" onsubmit="event.preventDefault()">
-    {% csrf_token %}
-    <div>
-        <input name="name" placeholder="Name" autocomplete="off"/>
-        <input name="password" type="password" placeholder="Password"/>
-        <small>Do not have an account? <a href="/register">Register</a></small>
-    </div>
-    
-    <button onclick="onUserData(event)">Next</button>
-    <div id="permissions">
-        <ul>
-            {% for permission in scope %}
-            <li>{{ permission }}</li>
-            {% endfor %}        
-        </ul>
-        <div id="buttons-container">
-            <button onclick="onFormSubmit(event, true)">Accept</button>
-            <button onclick="onFormSubmit(event, false)">Deny</button>
+    <form id="info" onsubmit="event.preventDefault()">
+        {% csrf_token %}
+        <div>
+            <input name="name" placeholder="Name" autocomplete="off"/>
+            <input name="password" type="password" placeholder="Password"/>
+
+            <small>Do not have an account? <a href="/register">Register</a></small>
+            <small>Do not have an account? <button onclick="register()">Register</button></small>
         </div>
-    </div>
-    
-</form>
+
+        <button onclick="onUserData(event)">Next</button>
+        <div id="permissions">
+            <ul>
+                {% for permission in scope %}
+                    <li>{{ permission }}</li>
+                {% endfor %}
+            </ul>
+            <div id="buttons-container">
+                <button onclick="onFormSubmit(event, true)">Accept</button>
+                <button onclick="onFormSubmit(event, false)">Deny</button>
+            </div>
+        </div>
+
+    </form>
 
 </div>
 
 </body>
-<script>    
+<script>
     function sendData(data) {
         const XHR = new XMLHttpRequest();
-        XHR.open( "POST", "login" );
+        XHR.open("POST", "login");
         XHR.send(JSON.stringify(data));
-        XHR.onreadystatechange = function() {
-            if(this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+        XHR.onreadystatechange = function () {
+            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
                 window.location.replace(response.callback_url)
             } 
         }
-    }       
-    
+    }
+
+    function register(){
+        window.location.replace(window.location.href.replace('login', 'register'))
+    }
+
     function onUserData(e) {
         e.preventDefault();
         var permissions_block = document.getElementById("permissions");
@@ -73,8 +84,8 @@
 
     function onFormSubmit(e, isAccepted) {
         e.preventDefault();
-        const userInfo = document.getElementById( "info" );     
-        const data = Object.fromEntries(new FormData(userInfo).entries());        
+        const userInfo = document.getElementById("info");
+        const data = Object.fromEntries(new FormData(userInfo).entries());
         data.is_accepted = isAccepted;
         data.client_id = "{{clientId}}"
         sendData(data);
