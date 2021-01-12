@@ -54,13 +54,15 @@ class UserLogic:
     def get_all_users(self):
         all_workers = Worker.objects.all()
         all_workers_json = self._serialize_object(all_workers)
+        for worker_dict in all_workers_json:
+            worker_dict.pop('password', None)
         return json.dumps(all_workers_json)
 
     def get_user(self, user_id) -> dict:
         worker = Worker.objects.get(id=user_id)
         worker_dict = self._serialize_object([worker])[0]
         worker_dict.pop('password', None)
-        return worker_dict
+        return {**worker_dict, 'id': worker.id}
 
     def create_user(self, user: User):
         worker = Worker.objects.create(**asdict(user))

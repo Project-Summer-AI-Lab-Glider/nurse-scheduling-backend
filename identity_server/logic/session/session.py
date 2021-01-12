@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
-from identity_server.logic.validation_chain.endpoint_decorator import HttpMethod
-from typing import List, Type
+from dataclasses import dataclass
+from typing import List, Type, Union
+
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render
-from dataclasses import dataclass
+from identity_server.logic.validation_chain.endpoint_decorator import \
+    HttpMethod
 
 
 @dataclass
@@ -24,11 +26,18 @@ class SessionState(ABC):
     def required_request_params(self) -> List[str]:
         return []
 
-    def handle(self, request: HttpRequest) -> HttpResponse:
+    def route(self, request: HttpRequest) -> Union[Type['SessionState'], None]:
+        """
+        Executes before `self.handle`. Based on :param request: decides whenewer action
+        could be handled by this state or session should transision to another state.
+        :returns type of state that should handle this request: 
+        """
+
+    def handle(self, request: HttpRequest, **kwargs) -> HttpResponse:
         request_errors = self._validate_request_body(request)
         if request_errors:
             return self.unprocessable_entity(request_errors, request)
-        return self.process_request(request)
+        return self.process_request(request, **kwargs)
 
     def _validate_request_body(self, request: HttpRequest):
         request_erros = ''
@@ -39,7 +48,7 @@ class SessionState(ABC):
                 request_erros += f'Missing value for field {required_field}\n'
         return request_erros
 
-    def _get_request_data(self, request):
+    def _get_request_data(self, request: HttpRequest):
         if request.method == HttpMethod.GET.value:
             data = request.GET
         elif request.method == HttpMethod.POST.value:
@@ -47,7 +56,7 @@ class SessionState(ABC):
         else:
             raise Exception(f"Unsupported request method {request.method}")
         return data
-    
+
     def bad_request(self, reason: str) -> HttpResponse:
         return HttpResponse(status=400, content_type="application/json", content=reason)
 
@@ -58,7 +67,6 @@ class SessionState(ABC):
         """
 
     def unprocessable_entity(self, reason: str, request: HttpRequest):
-        # self.end_session()
         return HttpResponse(status=422, content_type='text/html', content=f'<h1>{reason}</h1>')
 
     def render_html(self, request: HttpRequest, template, context):
@@ -78,7 +86,7 @@ class Session(ABC):
         self._context = context()
         self.enter_state(self.initial_state)
 
-    def enter_state(self, state: SessionState, **kwargs):
+    def enter_state(self, state: Type[SessionState], **kwargs):
         self._current_state = state(set_session_state=self.enter_state, context=self._context,
                                     end_session=self._end_session, **kwargs)
 
@@ -94,8 +102,15 @@ class Session(ABC):
     def context(self) -> SessionContext:
         return self._context
 
-    def handle(self, request) -> HttpResponse:
+    def handle(self, request, **kwargs) -> HttpResponse:
         """
         Handles reuqest depending on actual session state
         """
-        return self._current_state.handle(request)
+        handler = self._route(request)
+        return handler.handle(request, **kwargs)
+
+    def _route(self, request: HttpRequest) -> SessionState:
+        destination_state = self._current_state.route(request)
+        if destination_state:
+            self.enter_state(destination_state)
+        return self._current_state

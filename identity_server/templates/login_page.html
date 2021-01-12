@@ -16,6 +16,7 @@
     <form id="info" class="form-1" action="javascript:void(0);" onsubmit="event.preventDefault()">
         {% csrf_token %}
 
+        {% if not is_logged_in %}
         <div class="form__group field">
             <input name="name" class="form__group field" type="text" placeholder="Name" autocomplete="off"/>
             <label for="name" class="form__label">Name</label>
@@ -26,6 +27,7 @@
 
             <small>Do not have an account? <button onclick="register()">Register</button></small>       
          </div>
+        {% endif %}
         <div id="permissions">
             <ul>
                 {% for permission in scope %}

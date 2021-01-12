@@ -1,11 +1,12 @@
 
-import binascii
-import base64
-from identity_server.logic import session
-from identity_server.logic.session.session import Session
-from identity_server.logic.session.invalid_session import InvalidSession
-from django.http.request import HttpRequest
+import json
 import uuid
+
+from django.http.request import HttpRequest
+from django.http.response import HttpResponse
+from identity_server.logic.session.login_session import LoginSession
+from identity_server.logic.session.session import Session
+from identity_server.logic.token_logic.token_logic import TokenLogic
 
 
 class Singleton(type):
@@ -28,18 +29,29 @@ class SessionManager(metaclass=Singleton):
         if session_id:
             self._end_session(session_id)
 
-    def handle(self, request: HttpRequest, session_type: type):
+    def handle(self, request: HttpRequest, session_type: type, **kwargs):
         cookie_name = f'{self.session_id_cookie}_{session_type.__name__}'
         session_id = request.COOKIES.setdefault(
             cookie_name, self._create_session_id())
 
         session = self._get_session(session_id, session_type)
-        result = session.handle(request)
+        result = session.handle(request, **kwargs)
         if session.is_finished:
             self._end_session(session_id)
         result.set_cookie(cookie_name,
                           session_id, max_age=60*60*24*5, secure=False, samesite=False)
         return result
+
+    def handle_logout(self, request: HttpRequest) -> HttpResponse:
+        body = json.loads(request.body.decode('utf-8'))
+        client_id, user_id = body['client_id'], body['user_id']
+        login_session_key = f'{self.session_id_cookie}_{LoginSession.__name__}'
+        if login_session_key in self._sessions:
+            session = self._sessions[login_session_key]
+            assert isinstance(session, LoginSession)
+            session.logout_client(client_id)
+        TokenLogic().revoke_token(client_id, user_id)
+        return HttpResponse(json.dumps({'is_success': True}))
 
     def _create_session_id(self):
         return uuid.uuid4()

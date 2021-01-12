@@ -1,18 +1,18 @@
 import json
-from mongodb.Worker import Worker
 
 from django.http import HttpResponse
 from django.http.request import HttpRequest
-from identity_server.logic.session.registration_session.registration_session import \
-    RegistrationSession
+from mongodb.Worker import Worker
 from mongodb.WorkerShift import WorkerShift
 
 from identity_server.logic.session.login_session import LoginSession
+from identity_server.logic.session.registration_session.registration_session import \
+    RegistrationSession
 from identity_server.logic.session_manager import SessionManager
-from identity_server.logic.token_logic.token_logic import TokenLogic
-from identity_server.logic.user_logic.user_logic import User, UserLogic
 from identity_server.logic.token_logic.token_builder import TokenType
 from identity_server.logic.token_logic.token_decoder import TokenDecoder
+from identity_server.logic.token_logic.token_logic import TokenLogic
+from identity_server.logic.user_logic.user_logic import User, UserLogic
 from identity_server.logic.validation_chain.endpoint_decorator import (
     HttpMethod, Permissions, endpoint)
 
@@ -47,12 +47,7 @@ def create_token(request: HttpRequest):
 
 @endpoint(HttpMethod.POST, permissions=[])
 def revoke_token(request: HttpRequest):
-    print(request.body)
-    request = json.loads(request.body.decode('utf-8'))
-    client_id, user_id = request['client_id'], request['user_id']
-    TokenLogic().revoke_token(client_id, user_id)
-    SessionManager().end_session(request, LoginSession)
-    return HttpResponse(json.dumps({'is_success': True}))
+    return SessionManager().handle_logout(request)
 
 
 @endpoint(HttpMethod.GET)
