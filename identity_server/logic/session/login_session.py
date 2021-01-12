@@ -150,12 +150,16 @@ class LoggedIn(SessionState):
             return InitialLoginState
         return super().route(request)
 
-    def process_request(self, request, logout=False):
+    def process_request(self, request):
         assert isinstance(self.session_context, LoginSessionContext)
-        if logout:
-            return self._logout()
-        else:
-            return self._create_refresh_token()
+        client_id, callback_url = [self._get_request_data(request)[key] for key in [
+            'client_id', 'callback_url']]
+        permissions = self.session_context.authorized_clients[client_id]
+        user_id = self.session_context.user_id
+        refresh_token = TokenLogic().create_refresh_token(user_id, client_id, permissions)
+
+        scope = {'redirect': f'{callback_url}?code={refresh_token}'}
+        return self.render_html(request, 'redirect.html', scope)
 
     def _logout(self):
         assert isinstance(self.session_context, LoginSessionContext)
@@ -165,13 +169,3 @@ class LoggedIn(SessionState):
         TokenLogic().revoke_token(client_id, user_id)
         del self.session_context.authorized_clients[client_id]
         return HttpResponse(json.dumps({'is_success': True}))
-
-    def _create_refresh_token(self):
-        client_id, callback_url = [self._get_request_data(request)[key] for key in [
-            'client_id', 'callback_url']]
-        permissions = self.session_context.authorized_clients[client_id]
-        user_id = self.session_context.user_id
-        refresh_token = TokenLogic().create_refresh_token(user_id, client_id, permissions)
-
-        scope = {'redirect': f'{callback_url}?code={refresh_token}'}
-        return self.render_html(request, 'redirect.html', scope)
