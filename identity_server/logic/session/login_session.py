@@ -73,8 +73,6 @@ class InitialLoginState(SessionState):
         """
         
         result= Application.objects.filter(client_id=client_id).first()
-        print("perm")
-        print(result.permissions)
         return result
 
 
