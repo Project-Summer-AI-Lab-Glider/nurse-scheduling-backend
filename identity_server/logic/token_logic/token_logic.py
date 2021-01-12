@@ -38,7 +38,6 @@ class TokenLogic:
         return token
 
     def _create_access_token(self, builder: TokenBuilder, permissions: List[Permissions]):
-        print(permissions)
         return builder.set_expiration_time(1800)\
             .add_permissions(permissions)\
             .generate()
