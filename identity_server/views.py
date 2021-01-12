@@ -1,18 +1,18 @@
-from identity_server.logic.token_logic.token_decoder import TokenDecoder
-from identity_server.logic.token_logic.token_builder import TokenType
-from mongodb.WorkerShift import WorkerShift
-from identity_server.logic.session.login_session import LoginSession
 import json
-
-from django.http import HttpResponse, HttpResponseForbidden
-from django.http.request import HttpRequest
-from django.http.response import Http404, HttpResponseForbidden
 from mongodb.Worker import Worker
+
+from django.http import HttpResponse
+from django.http.request import HttpRequest
 from identity_server.logic.session.registration_session.registration_session import \
     RegistrationSession
+from mongodb.WorkerShift import WorkerShift
+
+from identity_server.logic.session.login_session import LoginSession
 from identity_server.logic.session_manager import SessionManager
 from identity_server.logic.token_logic.token_logic import TokenLogic
 from identity_server.logic.user_logic.user_logic import User, UserLogic
+from identity_server.logic.token_logic.token_builder import TokenType
+from identity_server.logic.token_logic.token_decoder import TokenDecoder
 from identity_server.logic.validation_chain.endpoint_decorator import (
     HttpMethod, Permissions, endpoint)
 
@@ -29,7 +29,6 @@ def register(request: HttpRequest):
 
 @endpoint(HttpMethod.GET)
 def is_authenticated(request: HttpRequest):
-    # TODO get params from body and check if user is authenticated
     return SessionManager().handle(request, LoginSession)
 
 
@@ -46,10 +45,10 @@ def create_token(request: HttpRequest):
     }))
 
 
-@endpoint(HttpMethod.POST, HttpMethod.DELETE)
+@endpoint(HttpMethod.POST, permissions=[])
 def revoke_token(request: HttpRequest):
-    # TODO check user credentials
-    request = json.loads(request.body)
+    print(request.body)
+    request = json.loads(request.body.decode('utf-8'))
     client_id, user_id = request['client_id'], request['user_id']
     TokenLogic().revoke_token(client_id, user_id)
     SessionManager().end_session(request, LoginSession)
@@ -60,7 +59,6 @@ def revoke_token(request: HttpRequest):
 def introspect_token(request):
     # TODO decode token and check it return type
     token = request.META['HTTP_AUTHORIZATION'].strip(TokenType.Bearer.value)
-    print(token)
     if not token:
         return HttpResponse(status=401)
     else:
@@ -91,12 +89,12 @@ def get_users(request: HttpRequest):
     return HttpResponse(users)
 
 
-@endpoint(HttpMethod.GET, permissions=[Permissions.USER_READ, Permissions.USER_CONTACTS_READ])
+@endpoint(HttpMethod.GET, permissions=[Permissions.CONTACTS_READ])
 def get_user(request: HttpRequest):
     token = request.META['HTTP_AUTHORIZATION'].strip(TokenType.Bearer.value)
-    user_id = TokenDecoder.decode(token)['payload'].setdefault('user_id')
+    user_id = TokenDecoder.decode(token)['payload'].setdefault('userId')
     user = UserLogic().get_user(user_id)
-    return HttpResponse(user)
+    return HttpResponse(json.dumps(user))
 
 
 @endpoint(HttpMethod.POST, permissions=[Permissions.USER_ADD])

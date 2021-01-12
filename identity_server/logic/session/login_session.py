@@ -1,6 +1,6 @@
 from identity_server.logic.session.common_states import LoggedIn
 import json
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import List
 
 from mongodb.Worker import Worker
@@ -43,7 +43,6 @@ class InitialLoginState(SessionState):
     @property
     def required_request_params(self):
         return [
-            'scope',
             'callback_url',
             'client_id'
         ]
@@ -99,38 +98,36 @@ class WaitingForPermissions(SessionState):
         assert isinstance(
             self.session_context,
             LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
+
         client_id = self._get_request_data(request)['client_id']
-        name = self._get_request_data(request)['name']
-        password = self._get_request_data(request)['password']
-        worker = Worker.objects.filter(name=name).last()
-        if not worker or worker.password != password:
+        user_id = self._validate_user_credentials(request)
+        if not user_id:
             return self.bad_request("Bad username or password")
-
-        self.session_context.user_id = worker.id
-        refresh_token = self._generate_code(worker.id, client_id)
-        self._save_to_database(refresh_token, client_id, worker.id,
-                               self.session_context.scope)
+        refresh_token = TokenLogic().create_refresh_token(
+            user_id, client_id, self.session_context.scope)
         self.set_session_state(LoggedIn)
-
         return self.ok(json.dumps({'callback_url': f'{self.session_context.callback_url}?code={refresh_token}'}))
 
-    def _generate_code(self, user_id, client_id):
-        return TokenLogic().create_refresh_token(user_id, client_id)
-
-    def _save_to_database(self, code, client_id, worker_id, scope):
-        ApplicationAccount.objects.create(client_id=client_id, worker_id=worker_id,
-                                          permissions=scope)
-        print(
-            f'Saving {client_id} associated with code: {code} and scope: {scope} to database')
+    def _validate_user_credentials(self, request):
+        name, password = [self._get_request_data(request)[key] for key in [
+            'name', 'password']]
+        user = Worker.objects.filter(name=name).last()
+        if not user or user.password != password:
+            return None
+        self.session_context.user_id = user.id
+        return user.id
 
 
 class LoggedIn(SessionState):
     def process_request(self, request):
+        # TODO: we do not handle different permissions for different apps. Once you had logged
+        # in and get your token you will go everywhere with it
         assert isinstance(
             self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
-        user_id, client_id, callback_url = self.session_context.user_id, self.session_context.client_id, self.session_context.callback_url
 
-        refresh_token = TokenLogic().create_refresh_token(user_id, client_id)
+        user_id, client_id, callback_url, permissions = [asdict(self.session_context)[key] for key in [
+            'user_id', 'client_id', 'scope', 'permissions']]
+        refresh_token = TokenLogic().create_refresh_token(user_id, client_id, permissions)
 
         scope = {'redirect': f'{callback_url}?code={refresh_token}'}
         return self.render_html(request, 'redirect.html', scope)

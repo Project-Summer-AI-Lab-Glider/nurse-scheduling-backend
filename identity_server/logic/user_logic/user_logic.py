@@ -56,11 +56,11 @@ class UserLogic:
         all_workers_json = self._serialize_object(all_workers)
         return json.dumps(all_workers_json)
 
-    def get_user(self, user_id):
+    def get_user(self, user_id) -> dict:
         worker = Worker.objects.get(id=user_id)
-        worker_json = self._serialize_object(worker)[0]
-        worker_json.pop('password', None)
-        return json.dumps(worker_json)
+        worker_dict = self._serialize_object([worker])[0]
+        worker_dict.pop('password', None)
+        return worker_dict
 
     def create_user(self, user: User):
         worker = Worker.objects.create(**asdict(user))
@@ -76,7 +76,7 @@ class UserLogic:
     def create_worke_shift(self, worker_shift: WorkerShift):
         WorkerShift.objects.create(vars(worker_shift))
 
-    def _serialize_object(self, querySet):
+    def _serialize_object(self, querySet: List[Worker]):
         serializedJson = serializers.serialize("json", querySet)
         jsonObj = json.loads(serializedJson)
         filteredJsonObj = [o['fields'] for o in jsonObj]
