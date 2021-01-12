@@ -40,25 +40,19 @@ def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None
             if request.method not in [item.value for item in allowed_methods]:
                 return HttpResponseNotFound(f"<h1>Method {request.method} {request.path} does not exists</h1>")
             if permissions is not None:
-                metadata = {}
-                authorization_key = 'HTTP_AUTHORIZATION'
-                try:
-                    method, token = request.META['HTTP_AUTHORIZATION'].split(
-                        ' ')
-                except Exception as e:
-                    if authorization_key in request.META:
-                        method = request.META['HTTP_AUTHORIZATION']
-                    token = ''
-
-                metadata.update({'method': method, 'token': token,
-                                 'excepted_permissions': permissions})
+                token_parts = request.META.setdefault(
+                    'HTTP_AUTHORIZATION', '').split(' ')
+                if len(token_parts) == 2:
+                    method, token = token_parts
+                else:
+                    method, token = token_parts[0], ''
+                metadata = {'method': method, 'token': token,
+                            'excepted_permissions': permissions}
                 try:
                     Validator(metadata).validate()
-                    return func(request, **kwargs)
-                except Exception as e:
+                except Exception:
                     return HttpResponseForbidden(f"Not authorized")
-            else:
-                return func(request, **kwargs)
+            return func(request, **kwargs)
         return handler
 
     return endpoint_wrapper
