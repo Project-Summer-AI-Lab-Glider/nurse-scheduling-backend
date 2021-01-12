@@ -50,8 +50,7 @@ def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None
                             'excepted_permissions': permissions}
                 try:
                     Validator(metadata).validate()
-                except Exception as e:
-                    print(e)
+                except Exception:
                     return HttpResponseForbidden(f"Not authorized")
             return func(request, **kwargs)
         return handler
