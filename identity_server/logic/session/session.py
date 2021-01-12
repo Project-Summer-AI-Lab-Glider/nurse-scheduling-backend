@@ -41,6 +41,7 @@ class SessionState(ABC):
 
     def _validate_request_body(self, request: HttpRequest):
         request_erros = ''
+        
         required_params = self.required_request_params
         actual_params = self._get_request_data(request)
         for required_field in required_params:
@@ -77,6 +78,10 @@ class SessionState(ABC):
 
     def forbidden_action(self, reason=''):
         return HttpResponseForbidden(reason=reason)
+
+    def redirect(self, request, url):
+        scope = {'redirect': url}
+        return self.render_html(request, 'redirect.html', scope)
 
 
 class Session(ABC):

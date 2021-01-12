@@ -101,7 +101,11 @@ class WaitingForPermissions(SessionState):
     def process_request(self, request: HttpRequest, **kwargs) -> HttpResponse:
         assert isinstance(self.session_context, LoginSessionContext)
 
-        client_id = self._get_request_data(request)['client_id']
+        client_id, is_accepted = [self._get_request_data(request)[key] for key in [
+            'client_id', 'is_accepted']]
+        if not is_accepted:
+            return self.forbidden_action(json.dumps({'callback_url': f'{self.session_context.callback_url}', 'reason': 'User denied access'}))
+
         user_id = self._get_user_id(request)
         if not user_id:
             return self.bad_request("Bad username or password")
@@ -157,9 +161,7 @@ class LoggedIn(SessionState):
         permissions = self.session_context.authorized_clients[client_id]
         user_id = self.session_context.user_id
         refresh_token = TokenLogic().create_refresh_token(user_id, client_id, permissions)
-
-        scope = {'redirect': f'{callback_url}?code={refresh_token}'}
-        return self.render_html(request, 'redirect.html', scope)
+        return self.redirect(request, f'{callback_url}?code={refresh_token}')
 
     def _logout(self):
         assert isinstance(self.session_context, LoginSessionContext)

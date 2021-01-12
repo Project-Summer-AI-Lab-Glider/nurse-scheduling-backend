@@ -46,8 +46,9 @@ class SessionManager(metaclass=Singleton):
         body = json.loads(request.body.decode('utf-8'))
         client_id, user_id = body['client_id'], body['user_id']
         login_session_key = f'{self.session_id_cookie}_{LoginSession.__name__}'
-        if login_session_key in self._sessions:
-            session = self._sessions[login_session_key]
+        session_id = request.COOKIES[login_session_key]
+        if session_id in self._sessions:
+            session = self._sessions[session_id]
             assert isinstance(session, LoginSession)
             session.logout_client(client_id)
         TokenLogic().revoke_token(client_id, user_id)

@@ -60,6 +60,11 @@
             else if(this.response === "Bad username or password"){
                 alert(this.response)
             }
+            else if(this.readyState === XMLHttpRequest.DONE && this.status === 403) {
+                console.log('here', this.response)
+                const response = JSON.parse(this.response)
+                window.location.replace(response.callback_url)
+            }
         }
     }
 

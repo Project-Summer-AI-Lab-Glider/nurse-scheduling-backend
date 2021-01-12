@@ -44,11 +44,8 @@
         XHR.onreadystatechange = function () {
             if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
-
                 alert('Account succesfully created')
-
                 window.location.replace(window.location.href.replace('register', 'login'))
-
             }
         }
     }
