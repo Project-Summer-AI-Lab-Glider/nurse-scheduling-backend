@@ -2,7 +2,7 @@
 
 <head>
     <title>Login</title>
-    <link rel="stylesheet"  href="{% static 'css/page.scss' %}">
+    <link rel="stylesheet" href="{% static 'css/page.scss' %}">
 </head>
 
 <body>
@@ -17,18 +17,21 @@
         {% csrf_token %}
 
         {% if not is_logged_in %}
-        <div class="form__group field">
-            <input name="name" class="form__group field" type="text" placeholder="Name" autocomplete="off"/>
-            <label for="name" class="form__label">Name</label>
-        </div>
-        <div class="form__group field">
-            <input name="password" class="form__group field" type="password" placeholder="Password"/>
-            <label for="name" class="form__label">Password</label>
+            <div class="form__group field">
+                <input name="name" class="form__group field" type="text" placeholder="Name" autocomplete="off"/>
+                <label for="name" class="form__label">Name</label>
+            </div>
+            <div class="form__group field">
+                <input name="password" class="form__group field" type="password" placeholder="Password"/>
+                <label for="name" class="form__label">Password</label>
 
 
-            <small>Do not have an account? <input type="submit" onclick="register()" value="Register"></small>       
-         </div>
+                <small>Do not have an account? <input type="submit" onclick="register()" value="Register"></small>
+            </div>
         {% endif %}
+        <div id="alert" class="NotVisible">
+            <p>Bad username or password!</p>
+        </div>
 
         <div id="permissions">
             <ul>
@@ -47,40 +50,52 @@
 </div>
 
 </body>
-<script>    
+<script>
     function sendData(data) {
         const XHR = new XMLHttpRequest();
-        XHR.open( "POST", "login" );
+        XHR.open("POST", "login");
         XHR.send(JSON.stringify(data));
-        XHR.onreadystatechange = function() {
-            if(this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+        XHR.onreadystatechange = function () {
+            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
                 window.location.replace(response.callback_url)
-            }
-            else if(this.response === "Bad username or password"){
-                alert(this.response)
-            }
-            else if(this.readyState === XMLHttpRequest.DONE && this.status === 403) {
-                console.log('here', this.response)
+            } else if (this.readyState === XMLHttpRequest.DONE && this.status === 403) {
                 const response = JSON.parse(this.response)
                 window.location.replace(response.callback_url)
+            }else {
+                setErrorVisible();
             }
         }
     }
 
-    function register(){
+    function register() {
         window.location.replace(window.location.href.replace('login', 'register'))
     }
 
     function onUserData(e) {
         e.preventDefault();
         var permissions_block = document.getElementById("permissions");
-        permissions.style.display = "block"
+        permissions_block.style.display = "block";
+    }
+
+    function validate(name) {
+        let usernameRegex = /^[a-zA-Z]+$/;
+        let matched = name.match(usernameRegex)
+        if (!matched) {
+            setErrorVisible();
+        }
+    }
+
+
+    function setErrorVisible() {
+        let pValidation = document.getElementById('alert')
+        pValidation.className = "visible"
     }
 
     function onFormSubmit(e, isAccepted) {
         e.preventDefault();
         const userInfo = document.getElementById("info");
+        validate(userInfo['name'].value)
         const data = Object.fromEntries(new FormData(userInfo).entries());
         data.is_accepted = isAccepted;
         data.client_id = "{{clientId}}"

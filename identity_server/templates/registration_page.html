@@ -17,11 +17,13 @@
             {% for required_field in required_fields %}
                 <div class="form__group field">
                     {% if required_field == "password" %}
-                        <input name="{{ required_field }}" placeholder="{{ required_field }}" type="password"
+                        <input id="{{ required_field }}" name="{{ required_field }}" placeholder="{{ required_field }}"
+                               type="password"
                                autocomplete="off"/>
 
                     {% else %}
-                        <input type="text" name="{{ required_field }}" placeholder="{{ required_field }}"
+                        <input id="{{ required_field }}" type="text" name="{{ required_field }}"
+                               placeholder="{{ required_field }}"
                                autocomplete="off"/>
                     {% endif %}
                     <label for="name" class="form__label">{{ required_field }}</label>
@@ -44,10 +46,52 @@
         XHR.onreadystatechange = function () {
             if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
-                alert('Account succesfully created')
+                alert('Account successfully created')
                 window.location.replace(window.location.href.replace('register', 'login'))
             }
         }
+    }
+
+    function validate(data) {
+        let isOk = true;
+        if (!data['name'].match(/^[a-zA-Z]+$/ || data['name'].length === 0)) {
+            isOk = false;
+            document.getElementById('name').className = 'error';
+        } else {
+            document.getElementById('name').className = '';
+        }
+        if (!data['surname'].match(/^[a-zA-Z]+$/ || data['surname'].length === 0)) {
+            isOk = false;
+            document.getElementById('surname').className = 'error';
+        } else {
+            document.getElementById('surname').className = '';
+        }
+        if (data['password'].length < 1) {
+            isOk = false;
+            document.getElementById('password').className = 'error';
+        } else {
+            document.getElementById('password').className = '';
+        }
+        if (!data['work_type'].match(/^[a-zA-Z]+$/) || data['work_type'].length === 0) {
+            isOk = false;
+            document.getElementById('work_type').className = 'error';
+        } else {
+            document.getElementById('work_type').className = '';
+        }
+        if (!data['work_norm'].match(/^.*/) || data['work_norm'].length === 0) {
+            isOk = false;
+            document.getElementById('work_norm').className = 'error';
+        } else {
+            document.getElementById('work_norm').className = '';
+
+        }
+        if (!data['phone_number'].match(/^[+0-9]+$/) || data['phone_number'].length === 0) {
+            isOk = false;
+            document.getElementById('phone_number').className = 'error';
+        } else {
+            document.getElementById('phone_number').className = '';
+        }
+        return isOk;
     }
 
     function onFormSubmit(e) {
@@ -57,8 +101,7 @@
         const data = Object.fromEntries(new FormData(userInfo).entries());
 
 
-
-        if (Object.values(data).every(field => field !== "")) {
+        if (validate(data)) {
             Object.keys(data).forEach(key => data[key] = data[key].trim());
             sendData(data);
         }
