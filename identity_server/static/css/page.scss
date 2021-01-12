@@ -174,7 +174,7 @@ h1 {
   margin: auto;
 }
 
-#alert p{
+#alert p {
   color: red;
 }
 
@@ -184,17 +184,15 @@ h1 {
 
 }
 
-.NotVisible p{
+.NotVisible p {
   height: 0;
   font-size: 0;
 }
 
 .error {
-  //background-color: red;
   border: 3px solid red;
-    box-shadow: 0 3px rgba(233, 87, 82, 0.5);
+  box-shadow: 0 3px rgba(233, 87, 82, 0.5);
 
-  //background-color: #ea6768;
 }
 
 
