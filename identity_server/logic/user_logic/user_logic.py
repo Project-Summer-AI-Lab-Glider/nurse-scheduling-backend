@@ -49,6 +49,8 @@ class UserLogic:
             'workerId': worker.id,
             'name': worker.name,
             'phoneNumber': worker.phone_number,
+            'surname': worker.surname,
+    
         }
 
     def get_all_users(self):

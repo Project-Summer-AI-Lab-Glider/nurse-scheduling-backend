@@ -38,6 +38,7 @@ class TokenLogic:
         return token
 
     def _create_access_token(self, builder: TokenBuilder, permissions: List[Permissions]):
+        print(permissions)
         return builder.set_expiration_time(1800)\
             .add_permissions(permissions)\
             .generate()
@@ -50,6 +51,7 @@ class TokenLogic:
             account = ApplicationAccount(
                 client_id=client_id, worker_id=user_id, permissions=permissions)
         account.refresh_token = new_refresh_token
+        account.permissions=permissions
         account.save()
 
     def _get_associated_user(self, refresh_token):

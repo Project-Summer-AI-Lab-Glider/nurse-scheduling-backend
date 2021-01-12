@@ -71,7 +71,11 @@ class InitialLoginState(SessionState):
         """
         Makes request to the database to get actual application name associated with given client id
         """
-        return Application.objects.filter(client_id=client_id).first()
+        
+        result= Application.objects.filter(client_id=client_id).first()
+        print("perm")
+        print(result.permissions)
+        return result
 
 
 class WaitingForPermissions(SessionState):
