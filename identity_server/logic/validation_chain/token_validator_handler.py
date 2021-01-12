@@ -59,6 +59,7 @@ class TokenValidator(Handler):
         try:
             if not self.initialized:
                 raise Exception("PLEASE INITIALIZE THE VALIDATOR FIRST")
+
             header_enc, payload_enc, signature_enc = self.token.split('.')
             payload = self._base64_decode(payload_enc)
             self._read_payload(payload)

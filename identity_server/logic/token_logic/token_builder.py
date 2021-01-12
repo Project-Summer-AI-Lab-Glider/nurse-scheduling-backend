@@ -60,7 +60,7 @@ class TokenBuilder:
     def _generate_token(self) -> Tuple[str, TokenType, int]:
         if not self._seconds_to_expire:
             raise Exception("Expiration time is missing")
-
+        self._generate_payload()
         header_enc = TokenBuilder._base64_encode(self.header)
         payload_enc = TokenBuilder._base64_encode(self.payload)
         unsigned_token = header_enc + '.' + payload_enc

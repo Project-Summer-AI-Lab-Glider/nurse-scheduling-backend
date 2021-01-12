@@ -1,4 +1,5 @@
 import base64
+import json
 
 
 class TokenDecoder:
@@ -9,7 +10,9 @@ class TokenDecoder:
         payload = cls._base64_decode(payload_enc)
         header = cls._base64_decode(header_enc)
         signature = cls._base64_decode(signature_enc)
-        return {'header': header, 'payload': payload, 'signature': signature}
+        token = {'header': header, 'payload': json.loads(
+            payload.decode('utf-8')), 'signature': signature}
+        return token
 
     @staticmethod
     def _base64_decode(statement: str) -> bytes:
