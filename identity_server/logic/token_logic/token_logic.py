@@ -50,6 +50,7 @@ class TokenLogic:
             account = ApplicationAccount(
                 client_id=client_id, worker_id=user_id, permissions=permissions)
         account.refresh_token = new_refresh_token
+        account.permissions=permissions
         account.save()
 
     def _get_associated_user(self, refresh_token):
