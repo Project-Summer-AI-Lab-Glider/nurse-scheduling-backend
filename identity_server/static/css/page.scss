@@ -174,5 +174,41 @@ h1 {
   margin: auto;
 }
 
+#alert p {
+  color: red;
+}
+
+.visible {
+  height: 100%;
+  font-size: 18px;
+
+}
+
+.NotVisible p {
+  height: 0;
+  font-size: 0;
+}
+
+.error {
+  border: 3px solid red;
+  box-shadow: 0 3px rgba(233, 87, 82, 0.5);
+
+}
 
 
+.error input[type=text],
+.error input[type=password] {
+  background-color: #ea6768;
+  width: 210px;
+  padding: 8px 4px 8px 10px;
+  margin-bottom: 15px;
+  border: 0;
+  border-bottom: 3px solid red;
+  outline: 0;
+  font-size: 1.3rem;
+  color: red;
+  transition: border-color 0.2s;
+
+  font-family: 'Raleway', 'Lato', Arial, sans-serif;
+
+}

@@ -2,6 +2,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from typing import List, Type, Union
 
+from django.contrib import messages
 from django.http import request
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
@@ -94,8 +95,7 @@ class WaitingForPermissions(SessionState):
 
     def unprocessable_entity(self, reason: str, request: HttpRequest):
         assert isinstance(self.session_context, LoginSessionContext)
-        client_id = self._get_request_data(request)['client_id']
-        scope, app, client_id = self.session_context.scope, self.session_context.app
+        scope, app, client_id = self.session_context.scope, self.session_context.app, self.session_context.user_id
         return self.render_html(request, 'login_page.html', context={'scope': scope, 'app': app, 'clientId': client_id})
 
     def process_request(self, request: HttpRequest, **kwargs) -> HttpResponse:
@@ -108,6 +108,7 @@ class WaitingForPermissions(SessionState):
 
         user_id = self._get_user_id(request)
         if not user_id:
+            messages.error(request, "Bad username or password")
             return self.bad_request("Bad username or password")
         permissions = self.session_context.scope
         self.session_context.authorized_clients[client_id] = permissions
@@ -154,7 +155,7 @@ class LoggedIn(SessionState):
             return InitialLoginState
         return super().route(request)
 
-    def process_request(self, request):
+    def process_request(self, request: HttpRequest):
         assert isinstance(self.session_context, LoginSessionContext)
         client_id, callback_url = [self._get_request_data(request)[key] for key in [
             'client_id', 'callback_url']]
@@ -163,7 +164,7 @@ class LoggedIn(SessionState):
         refresh_token = TokenLogic().create_refresh_token(user_id, client_id, permissions)
         return self.redirect(request, f'{callback_url}?code={refresh_token}')
 
-    def _logout(self):
+    def _logout(self, request: HttpRequest):
         assert isinstance(self.session_context, LoginSessionContext)
 
         body = json.loads(request.body.decode('utf-8'))
