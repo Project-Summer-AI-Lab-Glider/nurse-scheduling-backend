@@ -1,8 +1,7 @@
 import hmac
-from typing import Optional
-
 from identity_server.logic.validation_chain.handler import Handler
-from identity_server.logic.validation_chain.exceptions.signature_validator_error import SignatureValidationError
+from .exceptions.validator_exceptions import SignatureValidationException
+
 
 class SignatureValidator(Handler):
     def __init__(self):
@@ -21,4 +20,4 @@ class SignatureValidator(Handler):
         if self._compare_signatures(self.legal_signature, self.signature):
             return super().handle(**kwargs)
         else:
-            raise SignatureValidationError()
+            raise SignatureValidationException()

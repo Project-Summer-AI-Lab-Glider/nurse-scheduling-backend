@@ -4,13 +4,15 @@ from identity_server.logic.validation_chain.permissions import Permissions
 from identity_server.logic.validation_chain.permission_validation_handler import PermissionValidator
 from identity_server.logic.validation_chain.header_validation_handler import HeaderValidator
 from identity_server.logic.validation_chain.expiration_date_validation_handler import ExpirationDateValidator
-from identity_server.logic.validation_chain.http_validator_handler import HttpValidator
+from identity_server.logic.validation_chain.http_request_validator_handler import HttpRequestValidator
+
+from .exceptions.validator_exceptions import *
+
 from enum import Enum
-from typing import Callable, List, Dict
 from typing import Callable, Dict, List
 import functools
 from django.http.request import HttpRequest
-from django.http.response import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
+from django.http.response import HttpResponse, HttpResponseNotFound
 
 
 class HttpMethod(Enum):
@@ -25,7 +27,7 @@ class HttpMethod(Enum):
 class Validator:
     def __init__(self):
         self.request = {}
-        self.validation_chain = [HttpValidator(), TokenValidator(), SignatureValidator(), HeaderValidator(),
+        self.validation_chain = [HttpRequestValidator(), TokenValidator(), SignatureValidator(), HeaderValidator(),
                                  PermissionValidator(), ExpirationDateValidator()]
         for i in range(len(self.validation_chain) - 1):
             self.validation_chain[i].set_next(self.validation_chain[i + 1])
@@ -44,8 +46,18 @@ def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None
             if permissions is not None:
                 try:
                     Validator().validate(request, permissions)
-                except Exception:
-                    return HttpResponseForbidden(f"Not authorized")
+                except HTTPRequestValidatorException:
+                    return HTTPRequestValidatorException.response
+                except TokenValidatorException:
+                    return TokenValidatorException.response
+                except SignatureValidationException:
+                    return SignatureValidationException.response
+                except HeaderValidationException:
+                    return HeaderValidationException.response
+                except PermissionValidatorException:
+                    return PermissionValidatorException.response
+                except ExpirationDateValidatorException:
+                    return ExpirationDateValidatorException.response
             return func(request, **kwargs)
         return handler
 
