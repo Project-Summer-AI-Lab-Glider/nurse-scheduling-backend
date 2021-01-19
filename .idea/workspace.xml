@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15107995-d538-43de-b4f8-ec0ad61b3772" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/identity_server/logic/validation_chain/http_validator_handler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/identity_server/logic/validation_chain/endpoint_decorator.py" beforeDir="false" afterPath="$PROJECT_DIR$/identity_server/logic/validation_chain/endpoint_decorator.py" afterDir="false" />
-    </list>
+    <list default="true" id="15107995-d538-43de-b4f8-ec0ad61b3772" name="Default Changelist" comment="Add HTTPRequestValidator to chain of responsibility" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -163,8 +160,16 @@
       <workItem from="1610467119878" duration="477000" />
       <workItem from="1610467623219" duration="1929000" />
       <workItem from="1610834957924" duration="36000" />
-      <workItem from="1610981890877" duration="8385000" />
+      <workItem from="1610981890877" duration="8755000" />
     </task>
+    <task id="LOCAL-00001" summary="Add HTTPRequestValidator to chain of responsibility">
+      <created>1611014801470</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1611014801470</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -184,6 +189,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="Add HTTPRequestValidator to chain of responsibility" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add HTTPRequestValidator to chain of responsibility" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/nurse_scheduling_backend$Server.coverage" NAME="Server Coverage Results" MODIFIED="1610467915088" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
