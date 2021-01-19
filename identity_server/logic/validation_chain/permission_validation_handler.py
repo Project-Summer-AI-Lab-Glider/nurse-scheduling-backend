@@ -2,7 +2,7 @@ from typing import Optional, List
 
 from identity_server.logic.validation_chain.permissions import Permissions
 from identity_server.logic.validation_chain.handler import Handler
-
+from identity_server.logic.validation_chain.exceptions.permission_validation_error import PermissionValidatorError
 
 class PermissionValidator(Handler):
     def __init__(self):
@@ -16,7 +16,7 @@ class PermissionValidator(Handler):
         if self._validate_permissions():
             return super().handle(**kwargs)
         else:
-            raise Exception("Invalid Permissions")
+            raise PermissionValidatorError()
 
     def _validate_permissions(self):
         for p in self.excepted_permissions:

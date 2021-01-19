@@ -5,6 +5,7 @@ from typing import Tuple
 from nurse_scheduling_backend.settings import SECRET_KEY
 
 from identity_server.logic.validation_chain.handler import Handler
+from identity_server.logic.validation_chain.exceptions.token_validator_error import TokenValidatorError
 
 
 class TokenValidator(Handler):
@@ -32,7 +33,7 @@ class TokenValidator(Handler):
                                      'legal_signature': self.legal_signature,
                                      })
         else:
-            raise Exception("Invalid Token")
+            raise TokenValidatorError()
 
     def init(self, token) -> None:
         self.token = token
