@@ -26,15 +26,13 @@ class HttpMethod(Enum):
 
 class Validator:
     def __init__(self):
-        self.request = {}
         self.validation_chain = [HttpRequestValidator(), TokenValidator(), SignatureValidator(), HeaderValidator(),
                                  PermissionValidator(), ExpirationDateValidator()]
         for i in range(len(self.validation_chain) - 1):
             self.validation_chain[i].set_next(self.validation_chain[i + 1])
 
     def validate(self, request, permissions):
-        self.request, next_validator = self.validation_chain[0].handle(request, permissions)
-        return next_validator
+        return self.validation_chain[0].handle(request, permissions)
 
 
 def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None):
@@ -47,17 +45,17 @@ def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None
                 try:
                     Validator().validate(request, permissions)
                 except HTTPRequestValidatorException:
-                    return HTTPRequestValidatorException.response
+                    return HTTPRequestValidatorException().response()
                 except TokenValidatorException:
-                    return TokenValidatorException.response
+                    return TokenValidatorException().response()
                 except SignatureValidationException:
-                    return SignatureValidationException.response
+                    return SignatureValidationException().response()
                 except HeaderValidationException:
-                    return HeaderValidationException.response
+                    return HeaderValidationException().response()
                 except PermissionValidatorException:
-                    return PermissionValidatorException.response
+                    return PermissionValidatorException().response()
                 except ExpirationDateValidatorException:
-                    return ExpirationDateValidatorException.response
+                    return ExpirationDateValidatorException().response()
             return func(request, **kwargs)
         return handler
 

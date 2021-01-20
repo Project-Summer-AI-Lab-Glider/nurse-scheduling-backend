@@ -1,6 +1,7 @@
 from identity_server.logic.validation_chain.handler import Handler
 from .exceptions.validator_exceptions import HTTPRequestValidatorException
 
+
 class HttpRequestValidator(Handler):
     def __init__(self):
         super().__init__()
@@ -14,9 +15,9 @@ class HttpRequestValidator(Handler):
         else:
             method, token = token_parts[0], ''
 
-        if method and token and permissions:
+        if method is not None and token is not None:
             metadata = {'method': method, 'token': token, 'excepted_permissions': permissions}
             handler_kwargs = {**metadata, **kwargs}
-            return metadata, super().handle(**handler_kwargs)
+            return super().handle(**handler_kwargs)
         else:
             raise HTTPRequestValidatorException()
