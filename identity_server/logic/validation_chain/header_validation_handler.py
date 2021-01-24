@@ -1,6 +1,7 @@
 from typing import Optional
 
 from identity_server.logic.validation_chain.handler import Handler
+from identity_server.logic.validation_chain.exceptions.validator_exceptions import HeaderValidationException
 
 
 class HeaderValidator(Handler):
@@ -13,7 +14,7 @@ class HeaderValidator(Handler):
         if self._validate_header():
             return super().handle(**kwargs)
         else:
-            raise Exception("Invalid Header")
+            raise HeaderValidationException()
 
     def _validate_header(self) -> bool:
         return self.header == b'{"typ": "JWT", "alg": "HS256"}'

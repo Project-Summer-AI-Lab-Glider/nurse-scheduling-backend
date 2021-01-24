@@ -2,6 +2,7 @@ import time
 from typing import Optional
 
 from identity_server.logic.validation_chain.handler import Handler
+from identity_server.logic.validation_chain.exceptions.validator_exceptions import ExpirationDateValidatorException
 
 
 class ExpirationDateValidator(Handler):
@@ -14,7 +15,7 @@ class ExpirationDateValidator(Handler):
         if not self._check_expire():
             return super().handle(**kwargs)
         else:
-            raise Exception("Token Expired")
+            raise ExpirationDateValidatorException()
 
     def _check_expire(self) -> bool:
         return time.time() > self.exp_time
