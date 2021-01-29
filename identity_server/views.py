@@ -52,7 +52,6 @@ def revoke_token(request: HttpRequest):
 
 @endpoint(HttpMethod.GET)
 def introspect_token(request):
-    # TODO decode token and check it return type
     token = request.META['HTTP_AUTHORIZATION'].strip(TokenType.Bearer.value)
     if not token:
         return HttpResponse(status=401)

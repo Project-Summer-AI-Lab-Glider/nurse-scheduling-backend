@@ -41,7 +41,7 @@
             </ul>
             <div class="buttons-container">
                 <input type="submit" onclick="onFormSubmit(event, true)" value="Accept">
-                <input type="submit" onclick="onFormSubmit(event, false)" value="Deny">
+                <!-- <input type="submit" onclick="onFormSubmit(event, false)" value="Deny"> -->
             </div>
         </div>
 
@@ -59,10 +59,10 @@
             if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
                 window.location.replace(response.callback_url)
-            } else if (this.readyState === XMLHttpRequest.DONE && this.status === 403) {
-                const response = JSON.parse(this.response)
-                window.location.replace(response.callback_url)
-            }else {
+            } else if (this.status === 403) {
+                const response = JSON.parse(this.statusText);
+                window.location.replace(response.callback_url);
+            } else if (this.status === 400) {
                 setErrorVisible();
             }
         }
@@ -79,10 +79,12 @@
     }
 
     function validate(name) {
-        let usernameRegex = /^[a-zA-Z]+$/;
-        let matched = name.match(usernameRegex)
-        if (!matched) {
-            setErrorVisible();
+        if (name) {
+            let usernameRegex = /^[a-zA-Z]+$/;
+            let matched = name.match(usernameRegex)
+            if (!matched) {
+                setErrorVisible();
+            }
         }
     }
 
