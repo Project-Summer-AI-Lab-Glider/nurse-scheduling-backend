@@ -47,7 +47,7 @@ class SessionManager(metaclass=Singleton):
             session = self._sessions[session_id]
             assert isinstance(session, LoginSession)
             session.logout_client(client_id)
-        TokenLogic().revoke_token(client_id, user_id)
+        TokenLogic.revoke_token(client_id, user_id)
         return HttpResponse(json.dumps({'is_success': True}))
 
     def handle_logout(self, request, token):

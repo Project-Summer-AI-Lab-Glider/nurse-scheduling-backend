@@ -48,9 +48,9 @@ class SessionState(ABC):
 
         required_params = self.required_request_params
         actual_params = self._get_request_data(request)
-        for required_field in required_params:
-            if not actual_params or required_field not in actual_params:
-                request_erros += f'Missing value for field {required_field}\n'
+        for param in required_params:
+            if not actual_params or param not in actual_params:
+                request_erros += f'Missing value for field {param}\n'
         return request_erros
 
     def _get_request_data(self, request: HttpRequest):

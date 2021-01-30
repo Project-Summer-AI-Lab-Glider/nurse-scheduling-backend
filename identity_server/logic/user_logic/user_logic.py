@@ -14,7 +14,7 @@ from mongodb.WorkerShift import WorkerShift
 @dataclass
 class User:
     name: str
-    password: str =''
+    password: str = ''
     surname: str = ''
     work_type: str = ''
     work_norm: str = ''
@@ -49,10 +49,10 @@ class UserLogic:
             old_user_data = Worker.objects.get(id=new_user_data.id)
         except Worker.DoesNotExist:
             raise UserNotExists(new_user_data)
-        for field,value in asdict(new_user_data).items():
-            if field =="password" and not new_user_data.password:
+        for field, value in asdict(new_user_data).items():
+            if field == "password" and not new_user_data.password:
                 continue
-            setattr(old_user_data,field,value)
+            setattr(old_user_data, field, value)
         old_user_data.save()
 
     @staticmethod
@@ -83,7 +83,6 @@ class UserLogic:
             'name': worker.name,
             'phoneNumber': worker.phone_number,
             'surname': worker.surname,
-
         }
 
     @classmethod

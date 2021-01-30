@@ -49,13 +49,13 @@ def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None
                     Validator().validate(request, permissions)
                 except ValidatorException as e:
                     return e.response()
-            token = request.META.setdefault(
+            splited_meta = request.META.setdefault(
                 'HTTP_AUTHORIZATION', " ").split(' ')
-            if len(token)>1:
-                token=token[1]
+            if len(splited_meta) > 1:
+                token = splited_meta[1]
             else:
-                token=''
-            
+                token = ''
+
             return func(request, token=token, **kwargs)
 
         return handler
