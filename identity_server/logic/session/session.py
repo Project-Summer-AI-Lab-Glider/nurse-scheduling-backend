@@ -23,7 +23,6 @@ class SessionState(ABC):
         self.set_session_state = set_session_state
         self.session_context = context
 
-    @property
     def required_request_params(self) -> List[str]:
         return []
 
@@ -46,11 +45,11 @@ class SessionState(ABC):
     def _validate_request_body(self, request: HttpRequest):
         request_erros = ''
 
-        required_params = self.required_request_params
+        required_params = self.required_request_params()
         actual_params = self._get_request_data(request)
-        for required_field in required_params:
-            if not actual_params or required_field not in actual_params:
-                request_erros += f'Missing value for field {required_field}\n'
+        for param in required_params:
+            if not actual_params or param not in actual_params:
+                request_erros += f'Missing value for field {param}\n'
         return request_erros
 
     def _get_request_data(self, request: HttpRequest):

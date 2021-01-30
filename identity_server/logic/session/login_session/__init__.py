@@ -1,2 +1,4 @@
-from identity_server.logic.session.login_session.states import WaitingForPermissions, InitialLoginState, LoggedIn
+from identity_server.logic.session.login_session.waiting_for_permission import WaitingForPermissions
+from identity_server.logic.session.login_session.initial_login_state import InitialLoginState
+from identity_server.logic.session.login_session.logged_in_state import LoggedIn
 from identity_server.logic.session.login_session.login_session import LoginSession
