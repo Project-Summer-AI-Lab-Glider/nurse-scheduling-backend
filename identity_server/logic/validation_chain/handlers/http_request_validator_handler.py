@@ -1,5 +1,5 @@
 from identity_server.logic.validation_chain.handler import Handler
-from .exceptions.validator_exceptions import HTTPRequestValidatorException
+from identity_server.logic.validation_chain.exceptions.validator_exceptions import HTTPRequestValidatorException
 
 
 class HttpRequestValidator(Handler):

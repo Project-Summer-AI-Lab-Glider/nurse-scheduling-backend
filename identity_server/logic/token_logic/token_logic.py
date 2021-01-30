@@ -36,6 +36,8 @@ class TokenLogic:
         if not account:
             account = ApplicationAccount(
                 client_id=client_id, worker_id=user_id, permissions=permissions, refresh_token=token_code)
+        else:
+            account = account[0]
         account.refresh_token = token_code
         account.permissions = permissions
         account.save()

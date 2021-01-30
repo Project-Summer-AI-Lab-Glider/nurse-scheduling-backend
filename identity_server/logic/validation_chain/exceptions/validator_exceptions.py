@@ -71,3 +71,12 @@ class RevokedTokenException(ValidatorException):
 
     def response(self) -> HttpResponse:
         return HttpResponseForbidden(f'<h1>Token: {self._token} is revoked</h1>')
+
+
+class ParameterValidationException(ValidatorException):
+    def __init__(self) -> None:
+        self.message = ""
+        super().__init__(self.message)
+
+    def response(self) -> HttpResponse:
+        return HttpResponseForbidden(f'<h1>Token: {self._token} is revoked</h1>')

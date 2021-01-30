@@ -3,10 +3,8 @@ import hmac
 import json
 from typing import Tuple
 from nurse_scheduling_backend.settings import SECRET_KEY
-
 from identity_server.logic.validation_chain.handler import Handler
 from identity_server.logic.validation_chain.exceptions.validator_exceptions import TokenValidatorException
-from identity_server.logic.user_logic.user_logic_exceptions import UserAlreadyExists
 
 
 class TokenValidator(Handler):
@@ -48,7 +46,8 @@ class TokenValidator(Handler):
     def _read_payload(self, payload) -> None:
         self.payload = json.loads(payload.decode("utf-8"))
 
-    def _create_signature(self, unsigned_token: str) -> bytes:
+    @staticmethod
+    def _create_signature(unsigned_token: str) -> bytes:
         return hmac.new(bytes(SECRET_KEY, 'latin-1'), unsigned_token.encode('utf-8'), 'sha256').digest()
 
     def _extract_payloads(self) -> Tuple[str, str, str]:

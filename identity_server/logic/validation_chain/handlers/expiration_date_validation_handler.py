@@ -1,6 +1,4 @@
 import time
-from typing import Optional
-
 from identity_server.logic.validation_chain.handler import Handler
 from identity_server.logic.validation_chain.exceptions.validator_exceptions import ExpirationDateValidatorException
 
