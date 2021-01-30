@@ -10,7 +10,6 @@ from identity_server.logic.user_logic.user_logic_exceptions import UserAlreadyEx
 
 class WaitingForRegistrationData(SessionState):
 
-    @property
     def required_request_params(self):
         return User.required_fields()
 

@@ -31,8 +31,13 @@ class TokenLogic:
     @staticmethod
     def create_token_code(user_id, client_id, permissions: List[Permissions]):
         token_code = uuid.uuid4()
-        account = ApplicationAccount(
-            client_id=client_id, worker_id=user_id, permissions=permissions, refresh_token=token_code)
+        account = ApplicationAccount.objects.filter(
+            client_id=client_id, worker_id=user_id)
+        if not account:
+            account = ApplicationAccount(
+                client_id=client_id, worker_id=user_id, permissions=permissions, refresh_token=token_code)
+        account.refresh_token = token_code
+        account.permissions = permissions
         account.save()
         return token_code
 

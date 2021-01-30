@@ -54,7 +54,7 @@ def get_workers_shift(request: HttpRequest, user_id, **kwargs):
 
 
 @endpoint(HttpMethod.PUT, HttpMethod.DELETE, permissions=[])
-def update_or_delete_user(request: HttpRequest, user_id) -> HttpResponse:
+def update_or_delete_user(request: HttpRequest, user_id, **kwargs) -> HttpResponse:
     if request.method == HttpMethod.PUT.value:
         user = json.loads(request.body)
         UserLogic.update_user(user)
