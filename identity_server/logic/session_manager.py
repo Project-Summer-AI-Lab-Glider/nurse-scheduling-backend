@@ -22,9 +22,7 @@ class SessionManager(metaclass=Singleton):
         if session_id:
             self._end_session(session_id)
 
-    def handle(self, request: HttpRequest, session_type: type, token: str, **kwargs):
-        if token in self._revoked_access_tokens:
-            return HttpResponse(status=403, content="Token deined")
+    def handle(self, request: HttpRequest, session_type: type, **kwargs):
         cookie_name = f'{self.session_id_cookie}_{session_type.__name__}'
         session_id = request.COOKIES.setdefault(
             cookie_name, self._create_session_id())
@@ -37,7 +35,7 @@ class SessionManager(metaclass=Singleton):
                           session_id, max_age=60*60*24*5, secure=False, samesite=False)
         return result
 
-    def handle_revoke(self, request, client_id, user_id, token):
+    def handle_revoke(self, request, client_id, user_id):
         """
         Revokes user access from application, 
         but user still logged in
@@ -48,14 +46,14 @@ class SessionManager(metaclass=Singleton):
             session = self._sessions[session_id]
             assert isinstance(session, LoginSession)
             session.logout_client(client_id)
-            RevokedTokenProvider().add_revoked_token(token)
         TokenLogic().revoke_token(client_id, user_id)
         return HttpResponse(json.dumps({'is_success': True}))
 
-    def handle_logout(self, request):
+    def handle_logout(self, request,token):
         """
         Logs user out of application
         """
+        RevokedTokenProvider().add_revoked_token(token)
         self.end_session(request, LoginSession)
         return HttpResponse(json.dumps({'is_success': True}))
 

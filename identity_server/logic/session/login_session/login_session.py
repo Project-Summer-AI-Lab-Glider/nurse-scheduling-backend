@@ -9,8 +9,10 @@ class LoginSession(Session):
         super().__init__(LoginSessionContext)
 
     def logout_client(self, client_id):
+        
         assert isinstance(self.context, LoginSessionContext)
-        del self.context.authorized_clients[client_id]
+        if client_id in self.context.authorized_clients:
+            del self.context.authorized_clients[client_id]
 
     @property
     def initial_state(self):

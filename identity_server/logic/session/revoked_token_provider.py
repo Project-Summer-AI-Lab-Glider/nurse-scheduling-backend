@@ -2,7 +2,7 @@
 from identity_server.logic.session.singleton import Singleton
 
 
-class RevokedTokenProvider(Singleton):
+class RevokedTokenProvider(metaclass=Singleton):
     _revoked_access_tokens = []
 
     def add_revoked_token(self, token):

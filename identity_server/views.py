@@ -53,8 +53,8 @@ def login(request: HttpRequest, **kwargs):
 # TODO frontend should allow to make requests only from adminpanel
 # TODO add permission guard
 @endpoint(HttpMethod.POST, permissions=[])
-def logout(request, **kwargs):
-    return SessionManager().handle_logout(request)
+def logout(request, token, **kwargs):
+    return SessionManager().handle_logout(request,token)
 
 
 @endpoint(HttpMethod.POST, permissions=[])
