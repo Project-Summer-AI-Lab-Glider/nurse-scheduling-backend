@@ -29,6 +29,7 @@
                 <small>Do not have an account? <input type="submit" onclick="register()" value="Register"></small>
             </div>
         {% endif %}
+
         <div id="alert" class="NotVisible">
             <p>Bad username or password!</p>
         </div>
@@ -39,6 +40,7 @@
                     <li>{{ permission }}</li>
                 {% endfor %}
             </ul>
+
             <div class="buttons-container">
                 <input type="submit" onclick="onFormSubmit(event, true)" value="Accept">
                 <!-- <input type="submit" onclick="onFormSubmit(event, false)" value="Deny"> -->

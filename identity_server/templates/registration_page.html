@@ -4,10 +4,10 @@
     <title>Create account</title>
 </head>
 
-
 <body>
 <div class="appName">
-    <h1>Creating an account</h1></div>
+    <h1>Creating an account</h1>
+</div>
 <div container="content" class="form-4">
 
 
@@ -30,11 +30,11 @@
                 </div>
             {% endfor %}
         </div>
-        <div class="buttons-container"><input type="submit" onclick="onFormSubmit(event)" value="Create account"></div>
-
-
+        <div class="buttons-container">
+            <input type="submit" onclick="onFormSubmit(event);event.preventDefault();" value="Create account"/>
+            <input type="submit" onclick="returnToLoginPage()" value="Return to login page"/>
+        </div>
     </form>
-
 </div>
 
 </body>
@@ -47,12 +47,16 @@
             if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
                 const response = JSON.parse(this.response)
                 alert('Account successfully created')
-                window.location.replace(window.location.href.replace('register', 'login'))
+                returnToLoginPage();
             }
             else if (this.status === 409) {
                 alert('User already exists')
             }
         }
+    }
+
+    function returnToLoginPage() {
+        window.location.replace(window.location.href.replace('register', 'login'));
     }
 
     function validate(data) {
@@ -74,15 +78,11 @@
 
     function onFormSubmit(e) {
         e.preventDefault();
-
         const userInfo = document.getElementById("info");
         const data = Object.fromEntries(new FormData(userInfo).entries());
-
-
         if (validate(data)) {
             Object.keys(data).forEach(key => data[key] = data[key].trim());
             sendData(data);
         }
-
     }
 </script>
