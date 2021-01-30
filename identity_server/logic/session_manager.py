@@ -1,4 +1,6 @@
 
+from identity_server.logic.session.revoked_token_provider import RevokedTokenProvider
+from identity_server.logic.session.singleton import Singleton
 from identity_server.logic.user_logic.user_logic import UserLogic
 import json
 import uuid
@@ -8,26 +10,6 @@ from django.http.response import HttpResponse
 from identity_server.logic.session.login_session import LoginSession
 from identity_server.logic.session.session import Session
 from identity_server.logic.token_logic.token_logic import TokenLogic
-
-
-class Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls.__name__ not in cls._instances:
-            cls._instances[cls.__name__] = super(
-                Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls.__name__]
-
-
-class RevokedTokenProvider(Singleton):
-    _revoked_access_tokens = []
-
-    def add_revoked_token(self, token):
-        self._revoked_access_tokens.append(token)
-
-    def is_token_revoked(self, token):
-        return token in self._revoked_access_tokens
 
 
 class SessionManager(metaclass=Singleton):

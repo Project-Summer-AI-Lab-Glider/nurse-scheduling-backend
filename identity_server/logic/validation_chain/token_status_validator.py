@@ -1,5 +1,5 @@
+from identity_server.logic.session.revoked_token_provider import RevokedTokenProvider
 from identity_server.logic.validation_chain.exceptions.validator_exceptions import RevokedTokenException
-from identity_server.logic.session_manager import RevokedTokenProvider
 from identity_server.logic.validation_chain.handler import Handler
 
 
