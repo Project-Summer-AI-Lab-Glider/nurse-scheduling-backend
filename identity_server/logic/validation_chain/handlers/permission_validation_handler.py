@@ -1,5 +1,4 @@
-from typing import Optional, List
-
+from typing import List
 from identity_server.logic.validation_chain.permissions import Permissions
 from identity_server.logic.validation_chain.handler import Handler
 from identity_server.logic.validation_chain.exceptions.validator_exceptions import PermissionValidatorException
@@ -8,19 +7,16 @@ from identity_server.logic.validation_chain.exceptions.validator_exceptions impo
 class PermissionValidator(Handler):
     def __init__(self):
         super().__init__()
-        self.permissions = ''
-        self.excepted_permissions = [Permissions]
 
     def handle(self, permissions: List[str], excepted_permissions: List[Permissions], **kwargs) -> bool:
-        self.permissions = permissions
-        self.excepted_permissions = excepted_permissions
-        if self._validate_permissions():
+        if self._validate_permissions(permissions, excepted_permissions):
             return super().handle(**kwargs)
         else:
             raise PermissionValidatorException()
 
-    def _validate_permissions(self):
-        for p in self.excepted_permissions:
-            if p.value not in self.permissions:
+    @staticmethod
+    def _validate_permissions(permissions, excepted_permissions):
+        for p in excepted_permissions:
+            if p.value not in permissions:
                 return False
         return True

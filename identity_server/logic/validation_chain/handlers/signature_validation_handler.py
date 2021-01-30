@@ -1,6 +1,6 @@
 import hmac
 from identity_server.logic.validation_chain.handler import Handler
-from .exceptions.validator_exceptions import SignatureValidationException
+from identity_server.logic.validation_chain.exceptions.validator_exceptions import SignatureValidationException
 
 
 class SignatureValidator(Handler):
