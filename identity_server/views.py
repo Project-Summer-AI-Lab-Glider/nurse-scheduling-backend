@@ -100,7 +100,7 @@ def create_token(request: HttpRequest, **kwargs):
 
 
 @endpoint(HttpMethod.GET)
-def introspect_token(request, token):
+def introspect_token(request, token, **kwargs):
     if not token:
         return HttpResponse(status=401, content=json.dumps({'is_authenticated': False}))
     else:

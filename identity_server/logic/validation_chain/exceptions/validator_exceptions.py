@@ -63,3 +63,11 @@ class ExpirationDateValidatorException(ValidatorException):
 
     def response(self):
         return HttpResponseForbidden(f'<h1>{self.message}</h1>')
+
+
+class RevokedTokenException(ValidatorException):
+    def __init__(self, token, *args: object) -> None:
+        self._token = token
+
+    def response(self) -> HttpResponse:
+        return HttpResponseForbidden(f'<h1>Token: {self._token} is revoked</h1>')
