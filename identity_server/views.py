@@ -54,7 +54,7 @@ def login(request: HttpRequest, **kwargs):
 # TODO add permission guard
 @endpoint(HttpMethod.POST, permissions=[])
 def logout(request, token, **kwargs):
-    return SessionManager().handle_logout(request,token)
+    return SessionManager().handle_logout(request, token)
 
 
 @endpoint(HttpMethod.POST, permissions=[])

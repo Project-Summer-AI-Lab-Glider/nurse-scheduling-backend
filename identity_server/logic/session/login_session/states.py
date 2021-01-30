@@ -92,7 +92,7 @@ class LoggedIn(SessionState):
             'client_id', 'callback_url']]
         permissions = self.session_context.authorized_clients[client_id]
         user_id = self.session_context.user_id
-        refresh_token = TokenLogic().create_refresh_token(user_id, client_id, permissions)
+        refresh_token = TokenLogic().create_token_code(user_id, client_id, permissions)
         return self.redirect(request, f'{callback_url}?code={refresh_token}')
 
     def _logout(self, request: HttpRequest):
@@ -142,7 +142,7 @@ class WaitingForPermissions(SessionState):
             return self.bad_request("Bad username or password")
         permissions = self.session_context.scope
         self.session_context.authorized_clients[client_id] = permissions
-        refresh_token = TokenLogic().create_refresh_token(user_id, client_id, permissions)
+        refresh_token = TokenLogic().create_token_code(user_id, client_id, permissions)
 
         self.set_session_state(LoggedIn)
         return self.ok(json.dumps({'callback_url': f'{self.session_context.callback_url}?code={refresh_token}'}))

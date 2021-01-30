@@ -1,4 +1,5 @@
 
+from identity_server.logic.token_logic.token_decoder import TokenDecoder
 from identity_server.logic.session.revoked_token_provider import RevokedTokenProvider
 from identity_server.logic.session.singleton import Singleton
 from identity_server.logic.user_logic.user_logic import UserLogic
@@ -49,11 +50,13 @@ class SessionManager(metaclass=Singleton):
         TokenLogic().revoke_token(client_id, user_id)
         return HttpResponse(json.dumps({'is_success': True}))
 
-    def handle_logout(self, request,token):
+    def handle_logout(self, request, token):
         """
         Logs user out of application
         """
         RevokedTokenProvider().add_revoked_token(token)
+        user_id = TokenDecoder.decode(token)['payload']['userId']
+        TokenLogic.remove_user_authorized_apps(user_id)
         self.end_session(request, LoginSession)
         return HttpResponse(json.dumps({'is_success': True}))
 
