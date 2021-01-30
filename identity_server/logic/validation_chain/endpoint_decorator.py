@@ -6,6 +6,7 @@ from identity_server.logic.validation_chain.header_validation_handler import Hea
 from identity_server.logic.validation_chain.expiration_date_validation_handler import ExpirationDateValidator
 from identity_server.logic.validation_chain.http_request_validator_handler import HttpRequestValidator
 
+
 from .exceptions.validator_exceptions import *
 
 from enum import Enum
@@ -22,6 +23,7 @@ class HttpMethod(Enum):
     POST = 'POST'
     GET = 'GET'
     DELETE = 'DELETE'
+    PUT = 'PUT'
 
 
 class Validator:
@@ -44,19 +46,11 @@ def endpoint(*allowed_methods: HttpMethod, permissions: List[Permissions] = None
             if permissions is not None:
                 try:
                     Validator().validate(request, permissions)
-                except HTTPRequestValidatorException:
-                    return HTTPRequestValidatorException().response()
-                except TokenValidatorException:
-                    return TokenValidatorException().response()
-                except SignatureValidationException:
-                    return SignatureValidationException().response()
-                except HeaderValidationException:
-                    return HeaderValidationException().response()
-                except PermissionValidatorException:
-                    return PermissionValidatorException().response()
-                except ExpirationDateValidatorException:
-                    return ExpirationDateValidatorException().response()
-            return func(request, **kwargs)
-        return handler
+                except ValidatorException as e:
+                    return e.response()
+            token = request.META.setdefault(
+                'HTTP_AUTHORIZATION', " ").strip("Bearer ")
+            return func(request, token=token, **kwargs)
 
+        return handler
     return endpoint_wrapper

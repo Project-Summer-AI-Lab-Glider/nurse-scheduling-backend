@@ -5,7 +5,7 @@ import json
 class TokenDecoder:
 
     @classmethod
-    def decode(cls, token: str):
+    def decode(cls, token: str) -> dict:
         header_enc, payload_enc, signature_enc = token.split('.')
         payload = cls._base64_decode(payload_enc)
         header = cls._base64_decode(header_enc)

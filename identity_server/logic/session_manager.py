@@ -1,4 +1,5 @@
 
+from identity_server.logic.user_logic.user_logic import UserLogic
 import json
 import uuid
 
@@ -42,18 +43,27 @@ class SessionManager(metaclass=Singleton):
                           session_id, max_age=60*60*24*5, secure=False, samesite=False)
         return result
 
-    def handle_logout(self, request: HttpRequest) -> HttpResponse:
-        body = json.loads(request.body.decode('utf-8'))
-        client_id, user_id = body['client_id'], body['user_id']
+    def handle_revoke(self, request, client_id, user_id):
+        """
+        Revokes user access from application, 
+        but user still logged in
+        """
         login_session_key = f'{self.session_id_cookie}_{LoginSession.__name__}'
         session_id = request.COOKIES[login_session_key]
         if session_id in self._sessions:
             session = self._sessions[session_id]
             assert isinstance(session, LoginSession)
             session.logout_client(client_id)
-            del self._sessions[session_id]
-
         TokenLogic().revoke_token(client_id, user_id)
+        return HttpResponse(json.dumps({'is_success': True}))
+
+    def handle_logout(self, request):
+        """
+        Logs user out of application
+        """
+        login_session_key = f'{self.session_id_cookie}_{LoginSession.__name__}'
+        session_id = request.COOKIES[login_session_key]
+        self.end_session(session_id)
         return HttpResponse(json.dumps({'is_success': True}))
 
     def _create_session_id(self):

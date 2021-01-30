@@ -49,6 +49,9 @@
                 alert('Account successfully created')
                 window.location.replace(window.location.href.replace('register', 'login'))
             }
+            else if (this.status === 409) {
+                alert('User already exists')
+            }
         }
     }
 
@@ -60,36 +63,11 @@
         } else {
             document.getElementById('name').className = '';
         }
-        if (!data['surname'].match(/^[a-zA-Z]+$/ || data['surname'].length === 0)) {
-            isOk = false;
-            document.getElementById('surname').className = 'error';
-        } else {
-            document.getElementById('surname').className = '';
-        }
         if (data['password'].length < 1) {
             isOk = false;
             document.getElementById('password').className = 'error';
         } else {
             document.getElementById('password').className = '';
-        }
-        if (!data['work_type'].match(/^[a-zA-Z]+$/) || data['work_type'].length === 0) {
-            isOk = false;
-            document.getElementById('work_type').className = 'error';
-        } else {
-            document.getElementById('work_type').className = '';
-        }
-        if (!data['work_norm'].match(/^.*/) || data['work_norm'].length === 0) {
-            isOk = false;
-            document.getElementById('work_norm').className = 'error';
-        } else {
-            document.getElementById('work_norm').className = '';
-
-        }
-        if (!data['phone_number'].match(/^[+0-9]+$/) || data['phone_number'].length === 0) {
-            isOk = false;
-            document.getElementById('phone_number').className = 'error';
-        } else {
-            document.getElementById('phone_number').className = '';
         }
         return isOk;
     }

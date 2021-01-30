@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import json
 from typing import List, Type, Union
 
 from django.http.request import HttpRequest
@@ -39,9 +40,12 @@ class SessionState(ABC):
             return self.unprocessable_entity(request_errors, request)
         return self.process_request(request, **kwargs)
 
+    def conflict(self, confilcted_item, **kwargs) -> HttpResponse:
+        return HttpResponse(status=409, content=confilcted_item)
+
     def _validate_request_body(self, request: HttpRequest):
         request_erros = ''
-        
+
         required_params = self.required_request_params
         actual_params = self._get_request_data(request)
         for required_field in required_params:
@@ -118,4 +122,5 @@ class Session(ABC):
         destination_state = self._current_state.route(request)
         if destination_state:
             self.enter_state(destination_state)
+            self._route(request)
         return self._current_state

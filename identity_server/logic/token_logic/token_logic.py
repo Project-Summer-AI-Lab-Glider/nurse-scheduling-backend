@@ -1,3 +1,4 @@
+from identity_server.logic.token_logic.token_logic_exeptions import RefreshTokenNotBelongsToAnyUser
 from typing import List, Tuple
 
 from identity_server.logic.token_logic.token_builder import (TokenBuilder,
@@ -5,7 +6,6 @@ from identity_server.logic.token_logic.token_builder import (TokenBuilder,
 from identity_server.logic.token_logic.token_encoder import TokenEncoder
 from identity_server.logic.validation_chain.endpoint_decorator import \
     Permissions
-from mongodb.Application import Application
 from mongodb.ApplicationAccount import ApplicationAccount
 
 
@@ -38,7 +38,7 @@ class TokenLogic:
         return token
 
     def _create_access_token(self, builder: TokenBuilder, permissions: List[Permissions]):
-        return builder.set_expiration_time(1800)\
+        return builder.set_expiration_time(60 * 60 * 2)\
             .add_permissions(permissions)\
             .generate()
 
@@ -50,7 +50,7 @@ class TokenLogic:
             account = ApplicationAccount(
                 client_id=client_id, worker_id=user_id, permissions=permissions)
         account.refresh_token = new_refresh_token
-        account.permissions=permissions
+        account.permissions = permissions
         account.save()
 
     def _get_associated_user(self, refresh_token):
@@ -58,7 +58,7 @@ class TokenLogic:
             account = ApplicationAccount.objects.get(
                 refresh_token=refresh_token)
         except ApplicationAccount.DoesNotExist:
-            raise Exception("No user account exists")
+            raise RefreshTokenNotBelongsToAnyUser()
         user_id, permissions, client_id = account.worker_id, account.permissions, account.client_id
         return user_id, permissions, client_id
 

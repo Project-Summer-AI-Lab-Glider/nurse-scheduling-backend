@@ -1,40 +1,14 @@
-import json
-from dataclasses import asdict, dataclass, field
-from typing import List, Type, Union
-
-from django.contrib import messages
-from django.http import request
-from django.http.request import HttpRequest
-from django.http.response import HttpResponse
-from identity_server.logic.session.common_states import LoggedIn
-from identity_server.logic.session.session import (Session, SessionContext,
-                                                   SessionState)
-from identity_server.logic.token_logic.token_logic import TokenLogic
-from mongodb.Application import Application
 from mongodb.ApplicationAccount import ApplicationAccount
+from typing import Type, Union
 from mongodb.Worker import Worker
-
-
-@dataclass
-class LoginSessionContext(SessionContext):
-    app: str = ''
-    scope: List[str] = field(default_factory=list)
-    callback_url: str = ''
-    user_id: str = ''
-    authorized_clients = {}
-
-
-class LoginSession(Session):
-    def __init__(self) -> None:
-        super().__init__(LoginSessionContext)
-
-    def logout_client(self, client_id):
-        assert isinstance(self.context, LoginSessionContext)
-        del self.context.authorized_clients[client_id]
-
-    @property
-    def initial_state(self):
-        return InitialLoginState
+from identity_server.logic.token_logic.token_logic import TokenLogic
+from django.contrib import messages
+import json
+from django.http.response import HttpResponse
+from identity_server.logic.session.session import SessionState
+from identity_server.logic.session.login_session.login_session_context import LoginSessionContext
+from django.http.request import HttpRequest
+from mongodb.Application import Application
 
 
 class InitialLoginState(SessionState):
@@ -50,6 +24,16 @@ class InitialLoginState(SessionState):
             'client_id'
         ]
 
+    def route(self, request: HttpRequest) -> Union[Type['SessionState'], None]:
+        assert isinstance(self.session_context, LoginSessionContext)
+        data = self._get_request_data(request)
+        client_id = data['client_id']
+        app = self.get_authorized_app(client_id)
+        if app:
+            self.session_context.authorized_clients[client_id] = app[0].permissions
+            return LoggedIn
+        return super().route(request)
+
     def process_request(self, request: HttpRequest, **kwargs) -> HttpResponse:
         assert isinstance(self.session_context, LoginSessionContext)
         data = self._get_request_data(request)
@@ -59,7 +43,7 @@ class InitialLoginState(SessionState):
         app_name = app.name
         is_logged_in = self.is_user_logged_in()
         self.session_context.assign(
-            {'scope': scope, 'callback_url': data['callback_url'], 'client_id': client_id, 'app': app})
+            {'scope': scope, 'callback_url': data['callback_url'], 'client_id': client_id, 'app': app_name})
 
         self.set_session_state(WaitingForPermissions)
         return self.render_html(request, 'login_page.html', context={'scope': scope, 'app': app_name, 'clientId': client_id,  'is_logged_in': is_logged_in})
@@ -68,13 +52,57 @@ class InitialLoginState(SessionState):
         assert isinstance(self.session_context, LoginSessionContext)
         return self.session_context.user_id != ''
 
+    def get_authorized_app(self, client_id):
+        assert isinstance(self.session_context, LoginSessionContext)
+        user_id = self.session_context.user_id
+        if user_id:
+            authorized_app = ApplicationAccount.objects.filter(
+                worker_id=user_id, client_id=client_id)
+            return authorized_app
+
     def _get_app(self, client_id) -> Application:
         """
         Makes request to the database to get actual application name associated with given client id
         """
-        
-        result= Application.objects.filter(client_id=client_id).first()
+
+        result = Application.objects.filter(client_id=client_id).first()
         return result
+
+
+class LoggedIn(SessionState):
+    @property
+    def required_request_params(self):
+        return [
+            'callback_url',
+            'client_id'
+        ]
+
+    def route(self, request: HttpRequest) -> Union[Type['SessionState'], None]:
+        assert isinstance(
+            self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
+        client_id = self._get_request_data(request)['client_id']
+        is_authorized = client_id in self.session_context.authorized_clients
+        if not is_authorized:
+            return InitialLoginState
+        return super().route(request)
+
+    def process_request(self, request: HttpRequest):
+        assert isinstance(self.session_context, LoginSessionContext)
+        client_id, callback_url = [self._get_request_data(request)[key] for key in [
+            'client_id', 'callback_url']]
+        permissions = self.session_context.authorized_clients[client_id]
+        user_id = self.session_context.user_id
+        refresh_token = TokenLogic().create_refresh_token(user_id, client_id, permissions)
+        return self.redirect(request, f'{callback_url}?code={refresh_token}')
+
+    def _logout(self, request: HttpRequest):
+        assert isinstance(self.session_context, LoginSessionContext)
+
+        body = json.loads(request.body.decode('utf-8'))
+        client_id, user_id = body['client_id'], self.session_context.user_id
+        TokenLogic().revoke_token(client_id, user_id)
+        del self.session_context.authorized_clients[client_id]
+        return HttpResponse(json.dumps({'is_success': True}))
 
 
 class WaitingForPermissions(SessionState):
@@ -138,39 +166,3 @@ class WaitingForPermissions(SessionState):
             return None
         self.session_context.user_id = user.id
         return user.id
-
-
-class LoggedIn(SessionState):
-    @property
-    def required_request_params(self):
-        return [
-            'callback_url',
-            'client_id'
-        ]
-
-    def route(self, request: HttpRequest) -> Union[Type['SessionState'], None]:
-        assert isinstance(
-            self.session_context, LoginSessionContext), f"Expected context to be {LoginSessionContext.__name__}, but actual is {type(self.session_context).__name__}"
-        client_id = self._get_request_data(request)['client_id']
-        is_authorized = client_id in self.session_context.authorized_clients
-        if not is_authorized:
-            return InitialLoginState
-        return super().route(request)
-
-    def process_request(self, request: HttpRequest):
-        assert isinstance(self.session_context, LoginSessionContext)
-        client_id, callback_url = [self._get_request_data(request)[key] for key in [
-            'client_id', 'callback_url']]
-        permissions = self.session_context.authorized_clients[client_id]
-        user_id = self.session_context.user_id
-        refresh_token = TokenLogic().create_refresh_token(user_id, client_id, permissions)
-        return self.redirect(request, f'{callback_url}?code={refresh_token}')
-
-    def _logout(self, request: HttpRequest):
-        assert isinstance(self.session_context, LoginSessionContext)
-
-        body = json.loads(request.body.decode('utf-8'))
-        client_id, user_id = body['client_id'], self.session_context.user_id
-        TokenLogic().revoke_token(client_id, user_id)
-        del self.session_context.authorized_clients[client_id]
-        return HttpResponse(json.dumps({'is_success': True}))

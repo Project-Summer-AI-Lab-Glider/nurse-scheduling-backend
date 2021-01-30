@@ -6,6 +6,7 @@ from nurse_scheduling_backend.settings import SECRET_KEY
 
 from identity_server.logic.validation_chain.handler import Handler
 from identity_server.logic.validation_chain.exceptions.validator_exceptions import TokenValidatorException
+from identity_server.logic.user_logic.user_logic_exceptions import UserAlreadyExists
 
 
 class TokenValidator(Handler):
