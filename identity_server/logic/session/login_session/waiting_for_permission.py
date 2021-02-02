@@ -49,16 +49,16 @@ class WaitingForPermissions(sst.SessionState):
         permissions = self.session_context.scope
         self.session_context.authorized_clients[client_id] = permissions
         refresh_token = TokenLogic.create_token_code(
-            user_id, client_id, permissions)
+            user_id=user_id, client_id=client_id, session_id=self.session_id, permissions=permissions)
         self.set_session_state(lis.LoggedIn)
         return self.ok(json.dumps({'callback_url': f'{self.session_context.callback_url}?code={refresh_token}'}))
 
-    def _get_user_id(self, reuqest: HttpRequest) -> str:
+    def _get_user_id(self, request: HttpRequest) -> str:
         assert isinstance(self.session_context, ctx.LoginSessionContext)
         if self._is_user_logged_in():
             return self.session_context.user_id
         else:
-            return self._get_user_by_credentials(reuqest)
+            return self._get_user_by_credentials(request)
 
     def _is_user_logged_in(self):
         assert isinstance(self.session_context, ctx.LoginSessionContext)

@@ -5,8 +5,8 @@ from identity_server.logic.session.session import Session
 
 
 class LoginSession(Session):
-    def __init__(self) -> None:
-        super().__init__(ctx.LoginSessionContext)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(context=ctx.LoginSessionContext, **kwargs)
 
     def logout_client(self, client_id):
 

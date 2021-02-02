@@ -18,10 +18,11 @@ class SessionContext:
 
 
 class SessionState(ABC):
-    def __init__(self, set_session_state, context, end_session) -> None:
+    def __init__(self, set_session_state, context, end_session, session_id) -> None:
         self.end_session = end_session
         self.set_session_state = set_session_state
         self.session_context = context
+        self.session_id = session_id
 
     def required_request_params(self) -> List[str]:
         return []
@@ -88,15 +89,16 @@ class SessionState(ABC):
 
 
 class Session(ABC):
-    def __init__(self, context=SessionContext) -> None:
+    def __init__(self, session_id, context=SessionContext) -> None:
         super().__init__()
         self.is_finished = False
         self._context = context()
+        self.session_id = session_id
         self.enter_state(self.initial_state)
 
     def enter_state(self, state: Type[SessionState], **kwargs):
         self._current_state = state(set_session_state=self.enter_state, context=self._context,
-                                    end_session=self._end_session, **kwargs)
+                                    end_session=self._end_session, session_id=self.session_id, **kwargs)
 
     def _end_session(self):
         self.is_finished = True
