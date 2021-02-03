@@ -11,31 +11,32 @@ import uuid
 
 class TokenLogic:
     @staticmethod
-    def remove_user_authorized_apps(user_id):
-        ApplicationAccount.objects.filter(worker_id=user_id).delete()
+    def remove_user_authorized_apps(user_id, session_id):
+        ApplicationAccount.objects.filter(worker_id=user_id, session_id=session_id).delete()
 
     @classmethod
     def create_tokens(cls, refresh_token) -> Tuple[str, TokenType, int, str]:
         """
         Creates new pair of tokens based on refresh token
         """
-        user_id, permissions, client_id = cls._get_associated_user(
+        user_id, permissions, client_id, session_id = cls._get_associated_user(
             refresh_token)
         builder = TokenBuilder(user_id, TokenType.Bearer)
         rotated_refresh_token = cls.create_refresh_token(
-            user_id, client_id, permissions, builder)
+            user_id=user_id, client_id=client_id, permissions=permissions, builder=builder, session_id=session_id)
         access_token, token_type, seconds_to_expire = cls._create_access_token(
             builder, permissions)
         return access_token, token_type, seconds_to_expire, rotated_refresh_token
 
     @staticmethod
-    def create_token_code(user_id, client_id, permissions: List[Permissions]):
-        token_code = uuid.uuid4()
+    def create_token_code(user_id, client_id, session_id, permissions: List[Permissions]):
+        token_code = str(uuid.uuid4())
         account = ApplicationAccount.objects.filter(
-            client_id=client_id, worker_id=user_id)
+            client_id=client_id, worker_id=user_id, session_id=session_id)
         if not account:
             account = ApplicationAccount(
-                client_id=client_id, worker_id=user_id, permissions=permissions, refresh_token=token_code)
+                client_id=client_id, worker_id=user_id, session_id=session_id,
+                permissions=permissions, refresh_token=token_code)
         else:
             account = account[0]
         account.refresh_token = token_code
@@ -44,13 +45,13 @@ class TokenLogic:
         return token_code
 
     @classmethod
-    def create_refresh_token(cls, user_id, client_id, permissions: List[Permissions], builder) -> str:
+    def create_refresh_token(cls, user_id, client_id, session_id, permissions: List[Permissions], builder) -> str:
         """
         Creates new refresh token for user with given id and refresh token
         """
         token, *_ = builder.set_expiration_time(60 * 60 * 24 * 30).generate()
         cls._replace_refresh_token_in_database(
-            client_id, user_id, token, permissions)
+            client_id=client_id, user_id=user_id, new_refresh_token=token, permissions=permissions, session_id=session_id)
         return token
 
     @staticmethod
@@ -60,10 +61,11 @@ class TokenLogic:
             .generate()
 
     @staticmethod
-    def _replace_refresh_token_in_database(client_id: int, user_id: int, new_refresh_token: str, permissions: List[Permissions]):
+    def _replace_refresh_token_in_database(client_id: int, user_id: int, new_refresh_token: str,
+                                           session_id: str, permissions: List[Permissions]):
         try:
             account = ApplicationAccount.objects.get(
-                client_id=client_id, worker_id=user_id)
+                client_id=client_id, worker_id=user_id, session_id=session_id)
         except ApplicationAccount.DoesNotExist:
             raise RefreshTokenNotBelongsToAnyUser(client_id)
         account.refresh_token = new_refresh_token
@@ -77,8 +79,9 @@ class TokenLogic:
                 refresh_token=refresh_token)
         except ApplicationAccount.DoesNotExist:
             raise RefreshTokenNotBelongsToAnyUser()
-        user_id, permissions, client_id = account.worker_id, account.permissions, account.client_id
-        return user_id, permissions, client_id
+        user_id, permissions, client_id, session_id = account.worker_id,\
+                                                      account.permissions, account.client_id, account.session_id
+        return user_id, permissions, client_id, session_id
 
     @staticmethod
     def revoke_token(client_id, user_id):

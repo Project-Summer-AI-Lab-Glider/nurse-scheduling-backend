@@ -26,7 +26,7 @@ class SessionManager(metaclass=Singleton):
     def handle(self, request: HttpRequest, session_type: type, **kwargs):
         cookie_name = f'{self.session_id_cookie}_{session_type.__name__}'
         session_id = request.COOKIES.setdefault(
-            cookie_name, self._create_session_id())
+            cookie_name, str(self._create_session_id()) + request.META['HTTP_USER_AGENT'])
 
         session = self._get_session(session_id, session_type)
         result = session.handle(request, **kwargs)
@@ -56,7 +56,9 @@ class SessionManager(metaclass=Singleton):
         """
         RevokedTokenProvider().add_revoked_token(token)
         user_id = TokenDecoder.decode(token)['payload']['userId']
-        TokenLogic.remove_user_authorized_apps(user_id)
+        login_session_key = f'{self.session_id_cookie}_{LoginSession.__name__}'
+        session_id = request.COOKIES[login_session_key]
+        TokenLogic.remove_user_authorized_apps(user_id=user_id, session_id=session_id)
         self.end_session(request, LoginSession)
         return HttpResponse(json.dumps({'is_success': True}))
 
@@ -68,7 +70,7 @@ class SessionManager(metaclass=Singleton):
 
     def _get_session(self, session_id: str, session_type: type) -> Session:
         if not session_id or session_id not in self._sessions:
-            self._sessions[session_id] = session_type()
+            self._sessions[session_id] = session_type(session_id=session_id)
         return self._sessions[session_id]
 
     def _end_session(self, session_id):

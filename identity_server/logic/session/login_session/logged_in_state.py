@@ -33,7 +33,7 @@ class LoggedIn(SessionState):
         permissions = self.session_context.authorized_clients[client_id]
         user_id = self.session_context.user_id
         refresh_token = TokenLogic.create_token_code(
-            user_id, client_id, permissions)
+            user_id=user_id, client_id=client_id, session_id=self.session_id, permissions=permissions)
         return self.redirect(request, f'{callback_url}?code={refresh_token}')
 
     def _logout(self, request: HttpRequest):

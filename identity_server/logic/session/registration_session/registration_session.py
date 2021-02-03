@@ -5,8 +5,8 @@ from identity_server.logic.session.session import Session, SessionContext
 
 
 class RegistrationSession(Session):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
 
     @property
     def initial_state(self):
